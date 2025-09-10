@@ -1,4 +1,5 @@
 const db = require("../config/database");
+const { v4: uuidv4 } = require("uuid");
 
 class Category {
   constructor(data) {
@@ -32,8 +33,8 @@ class Category {
       SELECT c.*, COUNT(p.id) as product_count
       FROM categories c
       LEFT JOIN products p ON c.id = p.category_id
-      WHERE c.id = $1
-      GROUP BY c.id
+      WHERE c.id = ?
+      GROUP BY c.id, c.product_type
     `;
     const row = await db.get(sql, [id]);
     return row ? new Category(row) : null;
@@ -45,8 +46,8 @@ class Category {
       SELECT c.*, COUNT(p.id) as product_count
       FROM categories c
       LEFT JOIN products p ON c.id = p.category_id
-      WHERE c.slug = $1
-      GROUP BY c.id
+      WHERE c.slug = ?
+      GROUP BY c.id, c.product_type
     `;
     const row = await db.get(sql, [slug]);
     return row ? new Category(row) : null;
@@ -54,39 +55,33 @@ class Category {
 
   // Create new category
   static async create(categoryData) {
+    const id = uuidv4();
     const sql = `
-      INSERT INTO categories (name, slug, description, image, product_type)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id
+      INSERT INTO categories (id, name, slug, description, image, product_type)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
-
     const params = [
+      id,
       categoryData.name,
       categoryData.slug,
-      categoryData.description || null,
-      categoryData.image || null,
-      categoryData.productType || categoryData.product_type || "footwear",
+      categoryData.description || "",
+      categoryData.image || "",
+      categoryData.product_type || categoryData.productType || "footwear",
     ];
 
-    const result = await db.query(sql, params);
-    return Category.findById(result.rows[0].id);
+    await db.query(sql, params);
+    return Category.findById(id);
   }
 
   // Update category
   async update(updateData) {
     const fields = [];
     const params = [];
-    let paramIndex = 1;
 
     Object.keys(updateData).forEach((key) => {
       if (updateData[key] !== undefined && key !== "id") {
-        if (key === "productType") {
-          fields.push(`product_type = $${paramIndex++}`);
-          params.push(updateData[key]);
-        } else {
-          fields.push(`${key} = $${paramIndex++}`);
-          params.push(updateData[key]);
-        }
+        fields.push(`${key} = ?`);
+        params.push(updateData[key]);
       }
     });
 
@@ -101,7 +96,7 @@ class Category {
     const sql = `
       UPDATE categories
       SET ${fields.join(", ")}
-      WHERE id = $${paramIndex}
+      WHERE id = ?
     `;
 
     await db.query(sql, params);
@@ -111,57 +106,47 @@ class Category {
   // Delete category
   async delete() {
     // Check if category has products
-    const productCount = await this.getProductCount();
-    if (productCount > 0) {
+    const productCheck = await db.get(
+      "SELECT COUNT(*) as count FROM products WHERE category_id = ?",
+      [this.id]
+    );
+    if (productCheck && productCheck.count > 0) {
       throw new Error("Cannot delete category with existing products");
     }
 
-    const sql = "DELETE FROM categories WHERE id = $1";
+    const sql = "DELETE FROM categories WHERE id = ?";
     const result = await db.query(sql, [this.id]);
-    return result.rowCount > 0;
+    return result.changes > 0;
   }
 
-  // Get product count for this category
-  async getProductCount() {
-    const sql = "SELECT COUNT(*) as count FROM products WHERE category_id = $1";
-    const result = await db.query(sql, [this.id]);
-    return parseInt(result.rows[0].count);
+  // Get products in this category
+  async getProducts(filters = {}) {
+    const Product = require("./Product");
+    return Product.findAll({ ...filters, categories: [this.id] });
   }
 
-  // Get categories by product type
-  static async findByProductType(productType) {
-    const sql = `
-      SELECT c.*, COUNT(p.id) as product_count
-      FROM categories c
-      LEFT JOIN products p ON c.id = p.category_id
-      WHERE c.product_type = $1
-      GROUP BY c.id
-      ORDER BY c.name
-    `;
-    const result = await db.query(sql, [productType]);
-    return result.rows.map((row) => new Category(row));
+  // Generate slug from name
+  static generateSlug(name) {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   }
 
-  // Get all product types
-  static async getProductTypes() {
-    const sql = "SELECT DISTINCT product_type FROM categories ORDER BY product_type";
-    const result = await db.query(sql);
-    return result.rows.map((row) => row.product_type);
-  }
+  // Check if slug is unique
+  static async isSlugUnique(slug, excludeId = null) {
+    let sql = "SELECT id FROM categories WHERE slug = ?";
+    const params = [slug];
 
-  // Search categories
-  static async search(searchTerm) {
-    const sql = `
-      SELECT c.*, COUNT(p.id) as product_count
-      FROM categories c
-      LEFT JOIN products p ON c.id = p.category_id
-      WHERE c.name ILIKE $1 OR c.description ILIKE $2
-      GROUP BY c.id
-      ORDER BY c.name
-    `;
-    const searchPattern = `%${searchTerm}%`;
-    const result = await db.query(sql, [searchPattern, searchPattern]);
-    return result.rows.map((row) => new Category(row));
+    if (excludeId) {
+      sql += " AND id != ?";
+      params.push(excludeId);
+    }
+
+    const row = await db.get(sql, params);
+    return !row;
   }
 
   // Format for API response
@@ -173,7 +158,7 @@ class Category {
       description: this.description,
       image: this.image,
       productType: this.product_type,
-      productCount: this.product_count,
+      product_count: this.product_count,
       created_at: this.created_at,
       updated_at: this.updated_at,
     };

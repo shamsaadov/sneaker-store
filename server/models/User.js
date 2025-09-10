@@ -1,5 +1,4 @@
 const db = require("../config/database");
-const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 
 class User {
@@ -15,14 +14,14 @@ class User {
 
   // Get user by email
   static async findByEmail(email) {
-    const sql = "SELECT * FROM users WHERE email = ?";
+    const sql = "SELECT * FROM users WHERE email = $1";
     const row = await db.get(sql, [email.toLowerCase()]);
     return row ? new User(row) : null;
   }
 
   // Get user by ID
   static async findById(id) {
-    const sql = "SELECT * FROM users WHERE id = ?";
+    const sql = "SELECT * FROM users WHERE id = $1";
     const row = await db.get(sql, [id]);
     return row ? new User(row) : null;
   }
@@ -41,30 +40,25 @@ class User {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const id = uuidv4();
-    const now = new Date().toISOString();
-
     const sql = `
-      INSERT INTO users (id, email, password, name, role, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (email, password, name, role)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id
     `;
 
-    await db.query(sql, [
-      id,
+    const result = await db.query(sql, [
       email.toLowerCase(),
       hashedPassword,
       name,
-      role,
-      now,
-      now,
+      role
     ]);
 
-    return User.findById(id);
+    return User.findById(result.rows[0].id);
   }
 
   // Verify password
   static async verifyPassword(email, password) {
-    const sql = "SELECT * FROM users WHERE email = ?";
+    const sql = "SELECT * FROM users WHERE email = $1";
     const row = await db.get(sql, [email.toLowerCase()]);
 
     if (!row) {
@@ -96,11 +90,10 @@ class User {
       return this;
     }
 
-    updateFields.push("updated_at = ?");
-    values.push(new Date().toISOString());
+    updateFields.push("updated_at = CURRENT_TIMESTAMP");
     values.push(this.id);
 
-    const sql = `UPDATE users SET ${updateFields.join(", ")} WHERE id = ?`;
+    const sql = `UPDATE users SET ${updateFields.join(", ")} WHERE id = $${values.length}`;
     await db.query(sql, values);
 
     return User.findById(this.id);
@@ -111,13 +104,13 @@ class User {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    const sql = "UPDATE users SET password = ?, updated_at = ? WHERE id = ?";
-    await db.query(sql, [hashedPassword, new Date().toISOString(), this.id]);
+    const sql = "UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2";
+    await db.query(sql, [hashedPassword, this.id]);
   }
 
   // Delete user
   async delete() {
-    const sql = "DELETE FROM users WHERE id = ?";
+    const sql = "DELETE FROM users WHERE id = $1";
     await db.query(sql, [this.id]);
   }
 
@@ -127,13 +120,15 @@ class User {
     const conditions = [];
     const values = [];
 
+    let paramIndex = 1;
+    
     if (filters.role) {
-      conditions.push("role = ?");
+      conditions.push(`role = $${paramIndex++}`);
       values.push(filters.role);
     }
 
     if (filters.search) {
-      conditions.push("(name LIKE ? OR email LIKE ?)");
+      conditions.push(`(name ILIKE $${paramIndex++} OR email ILIKE $${paramIndex++})`);
       values.push(`%${filters.search}%`, `%${filters.search}%`);
     }
 
@@ -144,7 +139,7 @@ class User {
     sql += " ORDER BY created_at DESC";
 
     if (filters.limit) {
-      sql += " LIMIT ?";
+      sql += ` LIMIT $${values.length + 1}`;
       values.push(filters.limit);
     }
 

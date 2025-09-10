@@ -4,6 +4,7 @@
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- Categories table
 CREATE TABLE IF NOT EXISTS categories (
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS categories (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Products table  
+-- Products table
 CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
@@ -32,21 +33,21 @@ CREATE TABLE IF NOT EXISTS products (
     rating DECIMAL(3,2) DEFAULT 0,
     reviews_count INTEGER DEFAULT 0,
     featured BOOLEAN DEFAULT false,
-    
+
     -- New universal model fields
     product_type VARCHAR(50) DEFAULT 'footwear',
     gender VARCHAR(20) DEFAULT 'unisex',
     color VARCHAR(100),
-    
+
     -- Type-specific attributes stored as JSONB
     footwear_attributes JSONB,
     clothing_attributes JSONB,
     toys_attributes JSONB,
     accessories_attributes JSONB,
-    
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL
 );
 
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     size VARCHAR(20) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE RESTRICT
 );
@@ -103,12 +104,12 @@ CREATE TABLE IF NOT EXISTS reviews (
     comment TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
 );
 
--- Cart items table  
+-- Cart items table
 CREATE TABLE IF NOT EXISTS cart_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL,
@@ -117,7 +118,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
     size VARCHAR(20) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    
+
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
     UNIQUE(user_id, product_id, size)

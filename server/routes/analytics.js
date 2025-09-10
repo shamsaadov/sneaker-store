@@ -24,7 +24,7 @@ router.get("/dashboard", async (req, res) => {
 
         // Get total revenue from orders
     const revenueResult = await db.query(
-      'SELECT SUM(total) as revenue FROM orders WHERE status != "cancelled"'
+      "SELECT SUM(total) as revenue FROM orders WHERE status != 'cancelled'"
     );
     let totalRevenue = revenueResult.rows[0]?.revenue || 0;
 
@@ -71,13 +71,13 @@ router.get("/monthly", async (req, res) => {
 
       // Get orders for this month
       const ordersResult = await db.query(
-        'SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue FROM orders WHERE created_at >= ? AND created_at < ? AND status != "cancelled"',
+        "SELECT COUNT(*) as count, COALESCE(SUM(total), 0) as revenue FROM orders WHERE created_at >= $1 AND created_at < $2 AND status != 'cancelled'",
         [month.toISOString(), nextMonth.toISOString()]
       );
 
       // Get products added in this month
       const productsResult = await db.query(
-        "SELECT COUNT(*) as count FROM products WHERE created_at >= ? AND created_at < ?",
+        "SELECT COUNT(*) as count FROM products WHERE created_at >= $1 AND created_at < $2",
         [month.toISOString(), nextMonth.toISOString()]
       );
 
@@ -115,17 +115,17 @@ router.get("/activity", async (req, res) => {
 
     // Get recent orders
     const recentOrders = await db.query(
-      'SELECT *, "order" as activity_type FROM orders ORDER BY created_at DESC LIMIT 3'
+      "SELECT *, 'order' as activity_type FROM orders ORDER BY created_at DESC LIMIT 3"
     );
 
     // Get recent special orders
     const recentSpecialOrders = await db.query(
-      'SELECT *, "special_order" as activity_type FROM special_orders ORDER BY created_at DESC LIMIT 3'
+      "SELECT *, 'special_order' as activity_type FROM special_orders ORDER BY created_at DESC LIMIT 3"
     );
 
     // Get recent products
     const recentProducts = await db.query(
-      'SELECT *, "product" as activity_type FROM products ORDER BY created_at DESC LIMIT 3'
+      "SELECT *, 'product' as activity_type FROM products ORDER BY created_at DESC LIMIT 3"
     );
 
     // Process orders

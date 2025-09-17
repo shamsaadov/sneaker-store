@@ -5,7 +5,6 @@ const Product = require('../models/Product');
 // Get all products with filters
 router.get('/', async (req, res) => {
   try {
-    console.log("test");
     const filters = {
       search: req.query.search,
       brands: req.query.brands ? req.query.brands.split(',') : null,

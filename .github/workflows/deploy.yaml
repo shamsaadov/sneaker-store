@@ -103,7 +103,7 @@ jobs:
             
               echo "Перезапуск приложения"
               bunx kill-port 3001
-              nohup npm run start > server.log &
+              nohup npm run start > server.log 2>&1 < /dev/null & disown
             
               echo "✅ Деплой завершён!"
             '

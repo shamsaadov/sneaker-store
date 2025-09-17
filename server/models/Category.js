@@ -1,4 +1,5 @@
 const db = require("../config/database");
+const Product = require("./Product");
 
 class Category {
   constructor(data) {
@@ -128,40 +129,31 @@ class Category {
     return parseInt(result.rows[0].count);
   }
 
-  // Get categories by product type
-  static async findByProductType(productType) {
-    const sql = `
-      SELECT c.*, COUNT(p.id) as product_count
-      FROM categories c
-      LEFT JOIN products p ON c.id = p.category_id
-      WHERE c.product_type = $1
-      GROUP BY c.id
-      ORDER BY c.name
-    `;
-    const result = await db.query(sql, [productType]);
-    return result.rows.map((row) => new Category(row));
+  async getProducts(filters = {}) {
+    return Product.findAll({ ...filters, categories: [this.id] });
   }
 
-  // Get all product types
-  static async getProductTypes() {
-    const sql = "SELECT DISTINCT product_type FROM categories ORDER BY product_type";
-    const result = await db.query(sql);
-    return result.rows.map((row) => row.product_type);
+  static generateSlug(name) {
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/[\s_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
   }
 
-  // Search categories
-  static async search(searchTerm) {
-    const sql = `
-      SELECT c.*, COUNT(p.id) as product_count
-      FROM categories c
-      LEFT JOIN products p ON c.id = p.category_id
-      WHERE c.name ILIKE $1 OR c.description ILIKE $2
-      GROUP BY c.id
-      ORDER BY c.name
-    `;
-    const searchPattern = `%${searchTerm}%`;
-    const result = await db.query(sql, [searchPattern, searchPattern]);
-    return result.rows.map((row) => new Category(row));
+  // Check if slug is unique
+  static async isSlugUnique(slug, excludeId = null) {
+    let sql = "SELECT id FROM categories WHERE slug = $1";
+    const params = [slug];
+
+    if (excludeId) {
+      sql += " AND id != $2";
+      params.push(excludeId);
+    }
+
+    const row = await db.query(sql, params);
+    return !row;
   }
 
   // Format for API response
@@ -178,6 +170,7 @@ class Category {
       updated_at: this.updated_at,
     };
   }
+
 }
 
 module.exports = Category;

@@ -292,6 +292,42 @@ class SpecialOrder {
     return result.rows.map(row => new SpecialOrder(row));
   }
 
+  async setEstimate(price, deliveryDate, notes = '') {
+    const sql = `
+      UPDATE special_orders
+      SET estimated_price = $1, estimated_delivery = $2, admin_notes = $3, status = 'quoted', updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4
+    `;
+    await db.query(sql, [price, deliveryDate, notes, this.id]);
+    return SpecialOrder.findById(this.id);
+  }
+
+  // Mark as found with product URL
+  async markAsFound(productUrl, finalPrice, notes = '') {
+    const sql = `
+      UPDATE special_orders
+      SET found_product_url = $1, estimated_price = $2, admin_notes = $3, status = 'found', updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4
+    `;
+    await db.query(sql, [productUrl, finalPrice, notes, this.id]);
+    return SpecialOrder.findById(this.id);
+  }
+
+  static async getUrgentOrders() {
+    const sql = `
+      SELECT * FROM special_orders
+      WHERE urgency IN ('emergency', 'urgent') AND status NOT IN ('completed', 'cancelled', 'delivered')
+      ORDER BY
+        CASE urgency
+          WHEN 'emergency' THEN 1
+          WHEN 'urgent' THEN 2
+        END,
+        created_at ASC
+    `;
+    const result = await db.query(sql);
+    return result.rows.map(row => new SpecialOrder(row));
+  }
+
   // Format for API response
   toJSON() {
     return {
@@ -307,10 +343,10 @@ class SpecialOrder {
       description: this.description,
       images: this.images,
       status: this.status,
-      adminNotes: this.admin_notes,
-      estimatedPrice: this.estimated_price ? parseFloat(this.estimated_price) : null,
-      estimatedDelivery: this.estimated_delivery,
-      foundProductUrl: this.found_product_url,
+      admin_notes: this.admin_notes,
+      estimated_price: this.estimated_price ? parseFloat(this.estimated_price) : null,
+      estimated_delivery: this.estimated_delivery,
+      found_product_url: this.found_product_url,
       created_at: this.created_at,
       updated_at: this.updated_at
     };

@@ -196,9 +196,9 @@ class Order {
     const prefix = 'ORD';
     const timestamp = Date.now().toString().slice(-8); // Last 8 digits of timestamp
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    
+
     let orderNumber = `${prefix}${timestamp}${random}`;
-    
+
     // Check if order number already exists
     let attempts = 0;
     while (attempts < 10) {
@@ -206,13 +206,13 @@ class Order {
       if (!existing) {
         return orderNumber;
       }
-      
+
       // Generate new random part
       const newRandom = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
       orderNumber = `${prefix}${timestamp}${newRandom}`;
       attempts++;
     }
-    
+
     throw new Error('Unable to generate unique order number');
   }
 
@@ -278,38 +278,35 @@ class Order {
     return result.rows[0];
   }
 
-  // Add order item (for order_items table if needed)
-  async addItem(productId, quantity, size, price) {
+  static async getRecent(limit = 10) {
     const sql = `
-      INSERT INTO order_items (order_id, product_id, quantity, size, price)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id
+      SELECT * FROM orders
+      ORDER BY created_at DESC
+      LIMIT $1
     `;
-    const result = await db.query(sql, [this.id, productId, quantity, size, price]);
-    return result.rows[0].id;
+    const result = await db.query(sql, [limit]);
+    return result.rows.map(row => new Order(row));
   }
 
-  // Get order items (if using order_items table)
-  async getItems() {
+  static async getPending() {
     const sql = `
-      SELECT oi.*, p.name as product_name, p.brand as product_brand
-      FROM order_items oi
-      LEFT JOIN products p ON oi.product_id = p.id
-      WHERE oi.order_id = $1
-      ORDER BY oi.created_at
+      SELECT *
+      FROM orders
+      WHERE status = 'pending'
+      ORDER BY created_at
     `;
-    const result = await db.query(sql, [this.id]);
-    return result.rows;
+    const result = await db.query(sql);
+    return result.rows.map(row => new Order(row));
   }
 
   // Calculate totals
-  calculateTotals() {
-    const subtotal = this.items.reduce((sum, item) => {
+  static calculateTotals(items, shippingCost = 0, taxRate = 0) {
+    const subtotal = items.reduce((sum, item) => {
       return sum + (item.price * item.quantity);
     }, 0);
 
-    const shipping = this.shipping_cost || 0;
-    const tax = this.tax || 0;
+    const shipping = shippingCost;
+    const tax = subtotal * taxRate;
     const total = subtotal + shipping + tax;
 
     return {
@@ -324,16 +321,16 @@ class Order {
   toJSON() {
     return {
       id: this.id,
-      orderNumber: this.order_number,
-      customerName: this.customer_name,
-      customerPhone: this.customer_phone,
-      shippingAddress: this.shipping_address,
-      paymentMethod: this.payment_method,
+      order_umber: this.order_number,
+      customer_name: this.customer_name,
+      customer_phone: this.customer_phone,
+      shipping_address: this.shipping_address,
+      payment_method: this.payment_method,
       items: this.items,
-      subtotal: parseFloat(this.subtotal),
-      shippingCost: parseFloat(this.shipping_cost),
-      tax: parseFloat(this.tax),
-      total: parseFloat(this.total),
+      subtotal: parseFloat(this.subtotal) || 0,
+      shipping_cost: parseFloat(this.shipping_cost) || 0,
+      tax: parseFloat(this.tax) || 0,
+      total: parseFloat(this.total) || 0,
       status: this.status,
       notes: this.notes,
       created_at: this.created_at,

@@ -152,8 +152,8 @@ class Category {
       params.push(excludeId);
     }
 
-    const row = await db.query(sql, params);
-    return !row;
+    const result = await db.query(sql, params);
+    return result.rowCount === 0;
   }
 
   // Format for API response

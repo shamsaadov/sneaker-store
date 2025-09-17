@@ -1,0 +1,146 @@
+name: Деплой приложения
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main, feature/* ]
+
+jobs:
+  gather-facts:
+    runs-on: ubuntu-latest
+    name: Сбор артефактов
+    continue-on-error: false
+    steps:
+      - name: Установка переменной ветки
+        run: echo "BRANCH_NAME=${{ inputs.branch != '' && inputs.branch || github.head_ref || github.ref_name }}" >> "$GITHUB_ENV"
+
+      - name: Подтягивание актуального кода
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: BRANCH_NAME
+          script: |
+            bash -lc '
+            
+              echo "Cloning repo (if not exists)"
+              git clone git@github.com:shamsaadov/steepstep.git /var/lib/sneaker-store 2> /dev/null
+            
+              echo "🔄 Pulling branch latest changes..."
+              cd /var/lib/sneaker-store
+              git switch "$BRANCH_NAME"
+              git restore --staged .
+              git restore .
+              git pull
+            '
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    name: Деплой бэкенда
+    needs: gather-facts
+    continue-on-error: false
+
+    steps:
+      - name: Создание .env на основе секретов
+        uses: SpicyPizza/create-envfile@v2
+        with:
+          envkey_NODE_ENV: ${{ vars.NODE_ENV }}
+          envkey_JWT_SECRET: ${{ vars.JWT_SECRET }}
+          envkey_JWT_EXPIRES_IN: ${{ vars.JWT_EXPIRES_IN }}
+          envkey_PORT: ${{ vars.PORT }}
+          envkey_PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+          envkey_DB_HOST: ${{ vars.DB_HOST }}
+          envkey_DB_PORT: ${{ vars.DB_PORT }}
+          envkey_DB_NAME: ${{ vars.DB_NAME }}
+          envkey_DB_USER: ${{ vars.DB_USER }}
+          envkey_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          envkey_DB_SSL: ${{ vars.DB_SSL_ENABLED }}
+          file_name: sneaker-store-env
+          fail_on_empty: true
+
+      - name: Загрузка .env через ssh
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host:     ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USERNAME }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
+          source:   "sneaker-store-env"
+          target:   "/var/lib/sneaker-store/server"
+          debug: 'true'
+
+      - name: Деплой backend-приложения на VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            bash -lc '
+            
+              echo "Entering into application folder"
+              cd /var/lib/sneaker-store/server
+              mv sneaker-store-env .env
+            
+              export NVM_DIR="$HOME/.nvm"
+              if [ -s "$NVM_DIR/nvm.sh" ]; then
+                . "$NVM_DIR/nvm.sh"
+              else
+                echo "🔧 nvm not found — installing it"
+                curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+                . "$NVM_DIR/nvm.sh"
+              fi
+            
+              echo "🔨 Building and deploying..."
+              echo "Установка зависимостей"
+              nvm install 22
+              nvm use 22
+              npm i -g bun
+              
+              npm ci
+            
+              echo "Перезапуск приложения"
+              bunx kill-port 3001
+              nohup npm run start > server.log &
+            
+              echo "✅ Деплой завершён!"
+            '
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    name: Деплой фронтенда
+    needs: [gather-facts, deploy-backend]
+
+    steps:
+      - name: Деплой frontend-приложения на VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            bash -lc '
+              echo "Заходим в папку приложения"
+              cd /var/lib/sneaker-store
+
+              export NVM_DIR="/root/.nvm"
+              if [ -s "$NVM_DIR/nvm.sh" ]; then
+                . "$NVM_DIR/nvm.sh"
+              else
+                echo "🔧 nvm not found — installing it"
+                curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+                . "$NVM_DIR/nvm.sh"
+              fi
+
+              echo "🔨 Собираем приложение"
+              nvm install 22
+              nvm use 22
+              npx bun install
+              npx bun run build
+
+              systemctl restart nginx
+
+              echo "✅ Деплой завершён!"
+            '

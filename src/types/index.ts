@@ -218,8 +218,13 @@ export const PRODUCT_TYPE_CONFIGS: Record<ProductType, ProductTypeConfig> = {
     label: "Обувь",
     sizeType: "footwear",
     availableSizes: Array.from({ length: 29 }, (_, i) => i + 19), // 19-47 (числа)
-    specificFields: ["footwearType", "material", "season", "closure"],
-    requiredFields: ["footwearType", "material"],
+    specificFields: [
+      "footwearType",
+      "footwearMaterial",
+      "footwearSeason",
+      "footwearClosure",
+    ],
+    requiredFields: ["footwearType", "footwearMaterial"],
   },
   clothing: {
     label: "Одежда",
@@ -227,12 +232,12 @@ export const PRODUCT_TYPE_CONFIGS: Record<ProductType, ProductTypeConfig> = {
     availableSizes: ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"],
     specificFields: [
       "clothingType",
-      "material",
-      "season",
-      "fit",
+      "clothingMaterial",
+      "clothingSeason",
+      "clothingFit",
       "sleeveLength",
     ],
-    requiredFields: ["clothingType", "material"],
+    requiredFields: ["clothingType", "clothingMaterial"],
   },
   toys: {
     label: "Игрушки",
@@ -241,7 +246,7 @@ export const PRODUCT_TYPE_CONFIGS: Record<ProductType, ProductTypeConfig> = {
     specificFields: [
       "toyType",
       "ageGroup",
-      "material",
+      "toyMaterial",
       "batteryRequired",
       "assemblyRequired",
     ],
@@ -251,7 +256,7 @@ export const PRODUCT_TYPE_CONFIGS: Record<ProductType, ProductTypeConfig> = {
     label: "Аксессуары",
     sizeType: "universal",
     availableSizes: ["One Size", "S", "M", "L", "XL"],
-    specificFields: ["accessoryType", "material", "occasion"],
+    specificFields: ["accessoryType", "accessoryMaterial", "occasion"],
     requiredFields: ["accessoryType"],
   },
 };

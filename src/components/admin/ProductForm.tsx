@@ -134,6 +134,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
       { value: "oversized", label: "Оверсайз" },
       { value: "tailored", label: "Скроенный" },
     ],
+    seasons: [
+      { value: "spring", label: "Весна" },
+      { value: "summer", label: "Лето" },
+      { value: "autumn", label: "Осень" },
+      { value: "winter", label: "Зима" },
+      { value: "all-season", label: "Всесезонные" },
+    ],
     sleeveLengths: [
       { value: "sleeveless", label: "Без рукавов" },
       { value: "short", label: "Короткие" },
@@ -224,9 +231,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
     return config.availableSizes;
   };
 
-  // Получить отфильтрованные категории по типу товара
+  // Получить все доступные категории (убираем фильтрацию по типу)
   const getAvailableCategories = () => {
-    return categories.filter((cat) => cat.productType === formData.productType);
+    return categories; // Все категории доступны для всех типов товаров
+  };
+
+  // Получить читаемое название поля для валидации
+  const getFieldLabel = (field: string) => {
+    const fieldLabels: Record<string, string> = {
+      footwearType: "Тип обуви",
+      footwearMaterial: "Материал обуви",
+      clothingType: "Тип одежды",
+      clothingMaterial: "Материал одежды",
+      toyType: "Тип игрушки",
+      ageGroup: "Возрастная группа",
+      accessoryType: "Тип аксессуара",
+    };
+    return fieldLabels[field] || field;
   };
 
   useEffect(() => {
@@ -325,12 +346,40 @@ const ProductForm: React.FC<ProductFormProps> = ({
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
 
-      // Если изменился тип товара, сбрасываем размеры и категорию
+      // Если изменился тип товара, сбрасываем только размеры и специфические поля
       if (name === "productType") {
+        // Показываем предупреждение если есть выбранные размеры
+        const hasSelectedSizes = formData.sizes.length > 0;
+        if (hasSelectedSizes) {
+          const confirmReset = window.confirm(
+            "При смене типа товара будут сброшены выбранные размеры и специфические характеристики. Продолжить?"
+          );
+          if (!confirmReset) {
+            return; // Отменяем изменение
+          }
+        }
+
         setFormData((prev) => ({
           ...prev,
-          sizes: [],
-          category_id: "",
+          sizes: [], // Сбрасываем только размеры, категорию оставляем
+          // Сбрасываем специфические поля предыдущего типа
+          footwearType: "",
+          footwearMaterial: "",
+          footwearSeason: "",
+          footwearClosure: "",
+          clothingType: "",
+          clothingMaterial: "",
+          clothingSeason: "",
+          clothingFit: "",
+          sleeveLength: "",
+          toyType: "",
+          ageGroup: "",
+          toyMaterial: "",
+          batteryRequired: false,
+          assemblyRequired: false,
+          accessoryType: "",
+          accessoryMaterial: "",
+          occasion: "",
           [name]: value as any,
         }));
       }
@@ -469,7 +518,57 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Валидация размеров
+    if (formData.sizes.length === 0) {
+      alert("Пожалуйста, выберите хотя бы один размер");
+      return;
+    }
+
+    // Валидация категории
+    if (!formData.category_id) {
+      alert("Пожалуйста, выберите категорию");
+      return;
+    }
+
+    // Валидация цвета
+    if (!formData.color) {
+      alert("Пожалуйста, выберите цвет товара");
+      return;
+    }
+
+    // Валидация изображений
     const filteredImages = formData.images.filter((img) => img.trim() !== "");
+    if (filteredImages.length === 0) {
+      alert("Пожалуйста, добавьте хотя бы одно изображение товара");
+      return;
+    }
+
+    // Валидация цен
+    const price = Number.parseFloat(formData.price);
+    const originalPrice = formData.originalPrice
+      ? Number.parseFloat(formData.originalPrice)
+      : null;
+
+    if (price <= 0) {
+      alert("Цена должна быть больше 0");
+      return;
+    }
+
+    if (originalPrice && originalPrice <= price) {
+      alert("Старая цена должна быть больше текущей цены");
+      return;
+    }
+
+    // Валидация специфических обязательных полей
+    const config = PRODUCT_TYPE_CONFIGS[formData.productType];
+    for (const field of config.requiredFields) {
+      if (!formData[field as keyof typeof formData]) {
+        alert(
+          `Пожалуйста, заполните обязательное поле: ${getFieldLabel(field)}`
+        );
+        return;
+      }
+    }
 
     // Создаем специфические атрибуты в зависимости от типа товара
     const productData: Partial<Product> = {
@@ -567,13 +666,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Материал {config.requiredFields.includes("material") && "*"}
+                  Материал{" "}
+                  {config.requiredFields.includes("footwearMaterial") && "*"}
                 </label>
                 <select
                   name="footwearMaterial"
                   value={formData.footwearMaterial}
                   onChange={handleInputChange}
-                  required={config.requiredFields.includes("material")}
+                  required={config.requiredFields.includes("footwearMaterial")}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Выберите материал</option>
@@ -659,13 +759,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Материал {config.requiredFields.includes("material") && "*"}
+                  Материал{" "}
+                  {config.requiredFields.includes("clothingMaterial") && "*"}
                 </label>
                 <select
                   name="clothingMaterial"
                   value={formData.clothingMaterial}
                   onChange={handleInputChange}
-                  required={config.requiredFields.includes("material")}
+                  required={config.requiredFields.includes("clothingMaterial")}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Выберите материал</option>
@@ -690,7 +791,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Выберите сезон</option>
-                  {footwearOptions.seasons.map((season) => (
+                  {clothingOptions.seasons.map((season) => (
                     <option key={season.value} value={season.value}>
                       {season.label}
                     </option>
@@ -978,7 +1079,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
               Тип и категория товара
             </h3>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="space-y-6">
+              {/* Product Type - отдельно с описанием */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Тип товара *
@@ -996,45 +1098,66 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Определяет доступные размеры и специфические характеристики
+                  товара
+                </p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Пол *
-                </label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {genderOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Gender and Category - в одном ряду */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Пол *
+                  </label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {genderOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Категория *
-                </label>
-                <select
-                  name="category_id"
-                  value={formData.category_id}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Выберите категорию</option>
-                  {getAvailableCategories().map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Категория *
+                  </label>
+                  <select
+                    name="category_id"
+                    value={formData.category_id}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={getAvailableCategories().length === 0}
+                  >
+                    <option value="">
+                      {getAvailableCategories().length === 0
+                        ? "Нет созданных категорий"
+                        : "Выберите категорию"}
                     </option>
-                  ))}
-                </select>
+                    {getAvailableCategories().map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {getAvailableCategories().length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Нет созданных категорий. Создайте категории во вкладке
+                      "Категории".
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Категории используются для организации товаров в каталоге
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1077,6 +1200,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="15990"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Для отображения скидки. Должна быть больше текущей цены.
+                </p>
               </div>
 
               <div>
@@ -1097,12 +1223,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Цвет
+                  Цвет *
                 </label>
                 <select
                   name="color"
                   value={formData.color}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Выберите цвет</option>
@@ -1112,6 +1239,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Основной цвет товара для фильтрации
+                </p>
               </div>
             </div>
           </div>
@@ -1119,22 +1249,26 @@ const ProductForm: React.FC<ProductFormProps> = ({
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Описание
+              Описание *
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
+              required
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               placeholder="Подробное описание товара..."
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Детальное описание поможет покупателям лучше понять товар
+            </p>
           </div>
 
           {/* Images */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-4">
-              Изображения
+              Изображения *
             </label>
 
             {/* File Upload */}
@@ -1213,51 +1347,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 </div>
               )}
             </div>
-
-            {/* URL Images */}
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
-                Или добавьте изображения по URL:
-              </h4>
-              <div className="space-y-3">
-                {formData.images
-                  .filter((img) => !img.startsWith("data:"))
-                  .map((image, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div className="flex-1 relative">
-                        <input
-                          type="url"
-                          value={image}
-                          onChange={(e) =>
-                            handleImageChange(index, e.target.value)
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="https://example.com/image.jpg"
-                        />
-                        <ImageIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      </div>
-                      {formData.images.filter((img) => !img.startsWith("data:"))
-                        .length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeImageField(index)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                <button
-                  type="button"
-                  onClick={addImageField}
-                  className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Добавить URL изображения</span>
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* Specific Fields for Product Type */}
@@ -1267,7 +1356,79 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Доступные размеры *
+              <span className="text-blue-600 ml-2">
+                (Выбрано: {formData.sizes.length})
+              </span>
             </label>
+            {/* Кнопки быстрого выбора */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    sizes: getAvailableSizes().map((s) => s.toString()),
+                  }))
+                }
+                className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+              >
+                Выбрать все
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, sizes: [] }))}
+                className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+              >
+                Очистить
+              </button>
+              {formData.productType === "footwear" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sizes: Array.from({ length: 12 }, (_, i) =>
+                          (i + 19).toString()
+                        ),
+                      }))
+                    }
+                    className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
+                  >
+                    Детские (19-30)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sizes: Array.from({ length: 13 }, (_, i) =>
+                          (i + 30).toString()
+                        ),
+                      }))
+                    }
+                    className="px-3 py-1 text-xs bg-pink-100 text-pink-700 rounded-full hover:bg-pink-200 transition-colors"
+                  >
+                    Женские (30-42)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        sizes: Array.from({ length: 13 }, (_, i) =>
+                          (i + 35).toString()
+                        ),
+                      }))
+                    }
+                    className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                  >
+                    Мужские (35-47)
+                  </button>
+                </>
+              )}
+            </div>
+
             <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 mb-2">
               {getAvailableSizes().map((size) => (
                 <button
@@ -1284,10 +1445,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-600">
-              {PRODUCT_TYPE_CONFIGS[formData.productType].label}:{" "}
-              {getAvailableSizes().join(", ")}
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs text-gray-600">
+                {PRODUCT_TYPE_CONFIGS[formData.productType].label}:{" "}
+                {getAvailableSizes().join(", ")}
+              </p>
+              {formData.sizes.length === 0 && (
+                <p className="text-xs text-red-500">
+                  ⚠️ Необходимо выбрать хотя бы один размер
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Featured */}

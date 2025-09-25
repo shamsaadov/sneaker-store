@@ -130,20 +130,20 @@ const ProductDetailPage: React.FC = () => {
 
   const getGenderLabel = (gender: string) => {
     const genderLabels = {
-      men: "👨 Мужской",
-      women: "👩 Женский",
-      kids: "👶 Детский",
-      unisex: "🤝 Унисекс",
+      men: "Мужской",
+      women: "Женский",
+      kids: "Детский",
+      unisex: "Унисекс",
     };
     return genderLabels[gender as keyof typeof genderLabels] || gender;
   };
 
   const getProductTypeLabel = (productType: string) => {
     const typeLabels = {
-      footwear: "👟 Обувь",
-      clothing: "👕 Одежда",
-      toys: "🧸 Игрушки",
-      accessories: "👜 Аксессуары",
+      footwear: "Обувь",
+      clothing: "Одежда",
+      toys: "Игрушки",
+      accessories: "Аксессуары",
     };
     return typeLabels[productType as keyof typeof typeLabels] || productType;
   };

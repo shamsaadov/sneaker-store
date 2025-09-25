@@ -25,28 +25,28 @@ const AboutPage: React.FC = () => {
       name: "Александр Смирнов",
       position: "Основатель и CEO",
       description: "15 лет в индустрии моды, бывший менеджер Nike Russia",
-      avatar: "👨‍💼",
+      avatar: "АС",
       specialty: "Стратегия и развитие",
     },
     {
       name: "Мария Козлова",
       position: "Директор по закупкам",
       description: "Эксперт по трендам, отвечает за ассортимент",
-      avatar: "👩‍💼",
+      avatar: "МК",
       specialty: "Закупки и качество",
     },
     {
       name: "Дмитрий Петров",
       position: "Технический директор",
       description: "Разработчик с опытом в e-commerce решениях",
-      avatar: "👨‍💻",
+      avatar: "ДП",
       specialty: "IT и разработка",
     },
     {
       name: "Анна Федорова",
       position: "Менеджер по клиентам",
       description: "Заботится о каждом клиенте и их потребностях",
-      avatar: "👩‍💻",
+      avatar: "АФ",
       specialty: "Клиентский сервис",
     },
   ];
@@ -196,7 +196,9 @@ const AboutPage: React.FC = () => {
               <div className="bg-gradient-to-br from-brand-primary/20 to-brand-dark/20 rounded-3xl p-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 to-transparent" />
                 <div className="relative z-10 text-center">
-                  <div className="text-6xl mb-4">👟</div>
+                  <div className="text-6xl mb-4 font-bold text-brand-primary">
+                    100K+
+                  </div>
                   <h3 className="text-2xl font-bold text-neutral-black mb-4">
                     Более 100 000 пар продано
                   </h3>

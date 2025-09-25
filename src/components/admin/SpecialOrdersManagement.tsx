@@ -214,7 +214,7 @@ const SpecialOrdersManagement: React.FC = () => {
               onClick={() => setIsDetailModalOpen(false)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              ✕
+              ×
             </button>
           </div>
 

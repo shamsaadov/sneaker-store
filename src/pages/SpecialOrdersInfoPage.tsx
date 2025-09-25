@@ -486,7 +486,7 @@ const SpecialOrdersInfoPage: React.FC = () => {
           <div className="text-center mt-12">
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-3xl mx-auto">
               <div className="text-blue-800 font-semibold mb-2 text-lg">
-                💡 Как формируется цена?
+                Как формируется цена?
               </div>
               <div className="text-blue-700 leading-relaxed">
                 <strong>

@@ -1,8 +1,16 @@
-import type React from 'react';
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, Filter, X, Star, Percent, Package } from 'lucide-react';
-import type { FilterOptions, ProductType } from '../types';
-import { PRODUCT_TYPE_CONFIGS } from '../types';
+import type React from "react";
+import { useState } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Filter,
+  X,
+  Star,
+  Percent,
+  Package,
+} from "lucide-react";
+import type { FilterOptions, ProductType } from "../types";
+import { PRODUCT_TYPE_CONFIGS } from "../types";
 
 interface ProductFiltersProps {
   filters: FilterOptions;
@@ -35,7 +43,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
       [section]: !prev[section],
     }));
@@ -49,51 +57,51 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   };
 
   // Размеры одежды
-  const clothingSizes = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+  const clothingSizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
   // Универсальные размеры
-  const universalSizes = ['One Size'];
+  const universalSizes = ["One Size"];
 
   const genderOptions = [
-    { value: 'men', label: 'Мужские', emoji: '👨' },
-    { value: 'women', label: 'Женские', emoji: '👩' },
-    { value: 'kids', label: 'Детские', emoji: '👶' },
-    { value: 'unisex', label: 'Унисекс', emoji: '🤝' },
+    { value: "men", label: "Мужские" },
+    { value: "women", label: "Женские" },
+    { value: "kids", label: "Детские" },
+    { value: "unisex", label: "Унисекс" },
   ];
 
   const colors = [
-    { value: 'белый', label: 'Белый', color: '#FFFFFF' },
-    { value: 'черный', label: 'Черный', color: '#000000' },
-    { value: 'красный', label: 'Красный', color: '#DC2626' },
-    { value: 'синий', label: 'Синий', color: '#2563EB' },
-    { value: 'зеленый', label: 'Зеленый', color: '#16A34A' },
-    { value: 'желтый', label: 'Желтый', color: '#EAB308' },
-    { value: 'коричневый', label: 'Коричневый', color: '#A16207' },
-    { value: 'серый', label: 'Серый', color: '#6B7280' },
-    { value: 'розовый', label: 'Розовый', color: '#EC4899' },
-    { value: 'фиолетовый', label: 'Фиолетовый', color: '#9333EA' },
+    { value: "белый", label: "Белый", color: "#FFFFFF" },
+    { value: "черный", label: "Черный", color: "#000000" },
+    { value: "красный", label: "Красный", color: "#DC2626" },
+    { value: "синий", label: "Синий", color: "#2563EB" },
+    { value: "зеленый", label: "Зеленый", color: "#16A34A" },
+    { value: "желтый", label: "Желтый", color: "#EAB308" },
+    { value: "коричневый", label: "Коричневый", color: "#A16207" },
+    { value: "серый", label: "Серый", color: "#6B7280" },
+    { value: "розовый", label: "Розовый", color: "#EC4899" },
+    { value: "фиолетовый", label: "Фиолетовый", color: "#9333EA" },
   ];
 
   const materials = [
-    { value: 'leather', label: 'Кожа', icon: '🐄' },
-    { value: 'cotton', label: 'Хлопок', icon: '🌱' },
-    { value: 'polyester', label: 'Полиэстер', icon: '🧵' },
-    { value: 'canvas', label: 'Канвас', icon: '🎨' },
-    { value: 'mesh', label: 'Сетка', icon: '🕸️' },
-    { value: 'suede', label: 'Замша', icon: '🦆' },
-    { value: 'synthetic', label: 'Синтетика', icon: '🧪' },
-    { value: 'plastic', label: 'Пластик', icon: '🔧' },
-    { value: 'wood', label: 'Дерево', icon: '🌳' },
-    { value: 'fabric', label: 'Ткань', icon: '🧶' },
-    { value: 'metal', label: 'Металл', icon: '⚙️' },
+    { value: "leather", label: "Кожа" },
+    { value: "cotton", label: "Хлопок" },
+    { value: "polyester", label: "Полиэстер" },
+    { value: "canvas", label: "Канвас" },
+    { value: "mesh", label: "Сетка" },
+    { value: "suede", label: "Замша" },
+    { value: "synthetic", label: "Синтетика" },
+    { value: "plastic", label: "Пластик" },
+    { value: "wood", label: "Дерево" },
+    { value: "fabric", label: "Ткань" },
+    { value: "metal", label: "Металл" },
   ];
 
   const seasons = [
-    { value: 'spring', label: 'Весна', emoji: '🌸' },
-    { value: 'summer', label: 'Лето', emoji: '☀️' },
-    { value: 'autumn', label: 'Осень', emoji: '🍂' },
-    { value: 'winter', label: 'Зима', emoji: '❄️' },
-    { value: 'all-season', label: 'Всесезонные', emoji: '🔄' },
+    { value: "spring", label: "Весна" },
+    { value: "summer", label: "Лето" },
+    { value: "autumn", label: "Осень" },
+    { value: "winter", label: "Зима" },
+    { value: "all-season", label: "Всесезонные" },
   ];
 
   // Получить доступные размеры в зависимости от выбранных типов товаров
@@ -102,12 +110,18 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
     if (selectedTypes.length === 0) {
       // Если типы не выбраны, показываем размеры обуви по умолчанию
-      return [...new Set([...shoeSizeRanges.kids, ...shoeSizeRanges.women, ...shoeSizeRanges.men])].sort((a, b) => a - b);
+      return [
+        ...new Set([
+          ...shoeSizeRanges.kids,
+          ...shoeSizeRanges.women,
+          ...shoeSizeRanges.men,
+        ]),
+      ].sort((a, b) => a - b);
     }
 
     const allSizes: (string | number)[] = [];
 
-    selectedTypes.forEach(type => {
+    selectedTypes.forEach((type) => {
       const config = PRODUCT_TYPE_CONFIGS[type];
       if (config) {
         allSizes.push(...config.availableSizes);
@@ -115,22 +129,38 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     });
 
     // Если есть обувь, добавляем размеры в зависимости от пола
-    if (selectedTypes.includes('footwear')) {
-      if (filters.gender.includes('kids')) allSizes.push(...shoeSizeRanges.kids);
-      if (filters.gender.includes('women')) allSizes.push(...shoeSizeRanges.women);
-      if (filters.gender.includes('men')) allSizes.push(...shoeSizeRanges.men);
+    if (selectedTypes.includes("footwear")) {
+      if (filters.gender.includes("kids"))
+        allSizes.push(...shoeSizeRanges.kids);
+      if (filters.gender.includes("women"))
+        allSizes.push(...shoeSizeRanges.women);
+      if (filters.gender.includes("men")) allSizes.push(...shoeSizeRanges.men);
       if (filters.gender.length === 0) {
         // Если пол не выбран, показываем все размеры обуви
-        allSizes.push(...shoeSizeRanges.kids, ...shoeSizeRanges.women, ...shoeSizeRanges.men);
+        allSizes.push(
+          ...shoeSizeRanges.kids,
+          ...shoeSizeRanges.women,
+          ...shoeSizeRanges.men
+        );
       }
     }
 
     return [...new Set(allSizes)].sort((a, b) => {
-      if (typeof a === 'number' && typeof b === 'number') {
+      if (typeof a === "number" && typeof b === "number") {
         return a - b;
       }
-      if (typeof a === 'string' && typeof b === 'string') {
-        const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'One Size'];
+      if (typeof a === "string" && typeof b === "string") {
+        const sizeOrder = [
+          "XXS",
+          "XS",
+          "S",
+          "M",
+          "L",
+          "XL",
+          "XXL",
+          "XXXL",
+          "One Size",
+        ];
         const aIndex = sizeOrder.indexOf(a);
         const bIndex = sizeOrder.indexOf(b);
         if (aIndex !== -1 && bIndex !== -1) {
@@ -139,17 +169,20 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         return a.localeCompare(b);
       }
       // Числа перед строками
-      return typeof a === 'number' ? -1 : 1;
+      return typeof a === "number" ? -1 : 1;
     });
   };
 
   const handleArrayFilterChange = (
-    filterKey: keyof Pick<FilterOptions, 'brands' | 'colors' | 'materials' | 'seasons'>,
+    filterKey: keyof Pick<
+      FilterOptions,
+      "brands" | "colors" | "materials" | "seasons"
+    >,
     value: string
   ) => {
     const currentArray = filters[filterKey] as string[];
     const newArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
+      ? currentArray.filter((item) => item !== value)
       : [...currentArray, value];
 
     onFiltersChange({ ...filters, [filterKey]: newArray });
@@ -158,34 +191,34 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   const handleProductTypeChange = (value: ProductType) => {
     const currentArray = filters.productTypes;
     const newArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
+      ? currentArray.filter((item) => item !== value)
       : [...currentArray, value];
 
     // При изменении типа товара сбрасываем размеры, так как они могут быть неактуальными
     onFiltersChange({
       ...filters,
       productTypes: newArray,
-      sizes: [] // сбрасываем размеры
+      sizes: [], // сбрасываем размеры
     });
   };
 
   const handleGenderChange = (value: string) => {
     const currentArray = filters.gender;
     const newArray = currentArray.includes(value as any)
-      ? currentArray.filter(item => item !== value)
+      ? currentArray.filter((item) => item !== value)
       : [...currentArray, value as any];
 
     // При изменении пола для обуви также может изменяться доступность размеров
     onFiltersChange({
       ...filters,
       gender: newArray,
-      sizes: [] // сбрасываем размеры при изменении пола
+      sizes: [], // сбрасываем размеры при изменении пола
     });
   };
 
   const handleSizeChange = (size: string | number) => {
     const newSizes = filters.sizes.includes(size)
-      ? filters.sizes.filter(s => s !== size)
+      ? filters.sizes.filter((s) => s !== size)
       : [...filters.sizes, size];
 
     onFiltersChange({ ...filters, sizes: newSizes });
@@ -197,11 +230,14 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     onFiltersChange({ ...filters, priceRange: newPriceRange });
   };
 
-  const handleSortChange = (sortBy: FilterOptions['sortBy'], sortOrder: FilterOptions['sortOrder']) => {
+  const handleSortChange = (
+    sortBy: FilterOptions["sortBy"],
+    sortOrder: FilterOptions["sortOrder"]
+  ) => {
     onFiltersChange({ ...filters, sortBy, sortOrder });
   };
 
-  const handleSpecialFilterChange = (filterKey: 'hasDiscount' | 'inStock') => {
+  const handleSpecialFilterChange = (filterKey: "hasDiscount" | "inStock") => {
     onFiltersChange({ ...filters, [filterKey]: !filters[filterKey] });
   };
 
@@ -224,8 +260,8 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       occasions: [],
       hasDiscount: false,
       inStock: false,
-      sortBy: 'name',
-      sortOrder: 'asc',
+      sortBy: "name",
+      sortOrder: "asc",
     });
   };
 
@@ -272,11 +308,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <ChevronDown className="w-4 h-4 text-neutral-gray-500" />
         )}
       </button>
-      {expandedSections[section] && (
-        <div className="space-y-3">
-          {children}
-        </div>
-      )}
+      {expandedSections[section] && <div className="space-y-3">{children}</div>}
     </div>
   );
 
@@ -297,12 +329,16 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               </span>
             )}
           </div>
-          <ChevronDown className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
         </button>
       </div>
 
       {/* Filters Panel */}
-      <div className={`${isOpen ? 'block' : 'hidden'} lg:block bg-white rounded-xl shadow-lg border border-neutral-gray-200 overflow-hidden`}>
+      <div
+        className={`${isOpen ? "block" : "hidden"} lg:block bg-white rounded-xl shadow-lg border border-neutral-gray-200 overflow-hidden`}
+      >
         {/* Header */}
         <div className="p-6 border-b border-neutral-gray-200 bg-neutral-gray-50">
           <div className="flex items-center justify-between">
@@ -336,25 +372,66 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
         <div className="p-6 space-y-6">
           {/* Sort Options */}
-          <FilterSection title="Сортировка" section="sort" icon={<Filter className="w-4 h-4" />}>
+          <FilterSection
+            title="Сортировка"
+            section="sort"
+            icon={<Filter className="w-4 h-4" />}
+          >
             <div className="grid gap-2">
               {[
-                { value: 'name', label: 'По названию А-Я', order: 'asc' as const },
-                { value: 'name', label: 'По названию Я-А', order: 'desc' as const },
-                { value: 'price', label: 'Сначала дешевые', order: 'asc' as const },
-                { value: 'price', label: 'Сначала дорогие', order: 'desc' as const },
-                { value: 'newest', label: 'Новинки первыми', order: 'desc' as const },
-                { value: 'popularity', label: 'По популярности', order: 'desc' as const },
+                {
+                  value: "name",
+                  label: "По названию А-Я",
+                  order: "asc" as const,
+                },
+                {
+                  value: "name",
+                  label: "По названию Я-А",
+                  order: "desc" as const,
+                },
+                {
+                  value: "price",
+                  label: "Сначала дешевые",
+                  order: "asc" as const,
+                },
+                {
+                  value: "price",
+                  label: "Сначала дорогие",
+                  order: "desc" as const,
+                },
+                {
+                  value: "newest",
+                  label: "Новинки первыми",
+                  order: "desc" as const,
+                },
+                {
+                  value: "popularity",
+                  label: "По популярности",
+                  order: "desc" as const,
+                },
               ].map((option) => (
-                <label key={`${option.value}-${option.order}`} className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors">
+                <label
+                  key={`${option.value}-${option.order}`}
+                  className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors"
+                >
                   <input
                     type="radio"
                     name="sort"
-                    checked={filters.sortBy === option.value && filters.sortOrder === option.order}
-                    onChange={() => handleSortChange(option.value as FilterOptions['sortBy'], option.order)}
+                    checked={
+                      filters.sortBy === option.value &&
+                      filters.sortOrder === option.order
+                    }
+                    onChange={() =>
+                      handleSortChange(
+                        option.value as FilterOptions["sortBy"],
+                        option.order
+                      )
+                    }
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                   />
-                  <span className="text-sm text-neutral-black">{option.label}</span>
+                  <span className="text-sm text-neutral-black">
+                    {option.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -364,20 +441,24 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Тип товара"
             section="productType"
-            icon={<span className="text-lg">🏷️</span>}
+            icon={null}
             badge={filters.productTypes.length}
           >
             <div className="grid gap-2">
               {Object.entries(PRODUCT_TYPE_CONFIGS).map(([key, config]) => (
-                <label key={key} className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200">
+                <label
+                  key={key}
+                  className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200"
+                >
                   <input
                     type="checkbox"
                     checked={filters.productTypes.includes(key as ProductType)}
                     onChange={() => handleProductTypeChange(key as ProductType)}
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                   />
-                  <span className="text-xl mr-3">{config.emoji}</span>
-                  <span className="text-sm font-medium text-neutral-black">{config.label}</span>
+                  <span className="text-sm font-medium text-neutral-black">
+                    {config.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -387,20 +468,24 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Пол"
             section="gender"
-            icon={<span className="text-lg">👥</span>}
+            icon={null}
             badge={filters.gender.length}
           >
             <div className="grid gap-2">
               {genderOptions.map((option) => (
-                <label key={option.value} className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200">
+                <label
+                  key={option.value}
+                  className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200"
+                >
                   <input
                     type="checkbox"
                     checked={filters.gender.includes(option.value as any)}
                     onChange={() => handleGenderChange(option.value)}
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                   />
-                  <span className="text-xl mr-3">{option.emoji}</span>
-                  <span className="text-sm font-medium text-neutral-black">{option.label}</span>
+                  <span className="text-sm font-medium text-neutral-black">
+                    {option.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -415,14 +500,19 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           >
             <div className="max-h-48 overflow-y-auto space-y-2">
               {availableBrands.map((brand) => (
-                <label key={brand} className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors">
+                <label
+                  key={brand}
+                  className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors"
+                >
                   <input
                     type="checkbox"
                     checked={filters.brands.includes(brand)}
-                    onChange={() => handleArrayFilterChange('brands', brand)}
+                    onChange={() => handleArrayFilterChange("brands", brand)}
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                   />
-                  <span className="text-sm font-medium text-neutral-black">{brand}</span>
+                  <span className="text-sm font-medium text-neutral-black">
+                    {brand}
+                  </span>
                 </label>
               ))}
             </div>
@@ -432,18 +522,28 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Размеры"
             section="sizes"
-            icon={<span className="text-lg">📏</span>}
+            icon={null}
             badge={filters.sizes.length}
           >
             <div className="space-y-4">
-              {(filters.productTypes.length > 0 || filters.gender.length > 0) && (
+              {(filters.productTypes.length > 0 ||
+                filters.gender.length > 0) && (
                 <div className="text-xs text-neutral-gray-600 bg-neutral-gray-50 p-2 rounded">
-                  {filters.productTypes.includes('footwear') && 'Обувь: '}
-                  {filters.productTypes.includes('footwear') && filters.gender.includes('kids') && 'Детские: 19-30, '}
-                  {filters.productTypes.includes('footwear') && filters.gender.includes('women') && 'Женские: 30-42, '}
-                  {filters.productTypes.includes('footwear') && filters.gender.includes('men') && 'Мужские: 35-47, '}
-                  {filters.productTypes.includes('clothing') && 'Одежда: XXS-XXXL, '}
-                  {(filters.productTypes.includes('toys') || filters.productTypes.includes('accessories')) && 'Универсальные: One Size'}
+                  {filters.productTypes.includes("footwear") && "Обувь: "}
+                  {filters.productTypes.includes("footwear") &&
+                    filters.gender.includes("kids") &&
+                    "Детские: 19-30, "}
+                  {filters.productTypes.includes("footwear") &&
+                    filters.gender.includes("women") &&
+                    "Женские: 30-42, "}
+                  {filters.productTypes.includes("footwear") &&
+                    filters.gender.includes("men") &&
+                    "Мужские: 35-47, "}
+                  {filters.productTypes.includes("clothing") &&
+                    "Одежда: XXS-XXXL, "}
+                  {(filters.productTypes.includes("toys") ||
+                    filters.productTypes.includes("accessories")) &&
+                    "Универсальные: One Size"}
                 </div>
               )}
               <div className="grid grid-cols-6 gap-2">
@@ -453,8 +553,8 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                     onClick={() => handleSizeChange(size)}
                     className={`aspect-square flex items-center justify-center text-sm font-medium border-2 rounded-lg transition-all hover:scale-105 ${
                       filters.sizes.includes(size)
-                        ? 'border-brand-primary bg-brand-primary text-white shadow-lg'
-                        : 'border-neutral-gray-300 text-neutral-black hover:border-brand-primary'
+                        ? "border-brand-primary bg-brand-primary text-white shadow-lg"
+                        : "border-neutral-gray-300 text-neutral-black hover:border-brand-primary"
                     }`}
                   >
                     {size}
@@ -468,23 +568,25 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Цвета"
             section="colors"
-            icon={<span className="text-lg">🎨</span>}
+            icon={null}
             badge={filters.colors.length}
           >
             <div className="grid grid-cols-5 gap-3">
               {colors.map((color) => (
                 <button
                   key={color.value}
-                  onClick={() => handleArrayFilterChange('colors', color.value)}
+                  onClick={() => handleArrayFilterChange("colors", color.value)}
                   className={`group relative flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:scale-105 ${
                     filters.colors.includes(color.value)
-                      ? 'border-brand-primary bg-brand-primary/10'
-                      : 'border-neutral-gray-200 hover:border-neutral-gray-300'
+                      ? "border-brand-primary bg-brand-primary/10"
+                      : "border-neutral-gray-200 hover:border-neutral-gray-300"
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full border-2 mb-1 ${
-                      color.value === 'белый' ? 'border-neutral-gray-300' : 'border-transparent'
+                      color.value === "белый"
+                        ? "border-neutral-gray-300"
+                        : "border-transparent"
                     }`}
                     style={{ backgroundColor: color.color }}
                   />
@@ -505,20 +607,26 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Материалы"
             section="materials"
-            icon={<span className="text-lg">🧵</span>}
+            icon={null}
             badge={filters.materials.length}
           >
             <div className="grid gap-2">
               {materials.map((material) => (
-                <label key={material.value} className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors">
+                <label
+                  key={material.value}
+                  className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors"
+                >
                   <input
                     type="checkbox"
                     checked={filters.materials.includes(material.value)}
-                    onChange={() => handleArrayFilterChange('materials', material.value)}
+                    onChange={() =>
+                      handleArrayFilterChange("materials", material.value)
+                    }
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                   />
-                  <span className="text-lg mr-3">{material.icon}</span>
-                  <span className="text-sm font-medium text-neutral-black">{material.label}</span>
+                  <span className="text-sm font-medium text-neutral-black">
+                    {material.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -528,45 +636,59 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Сезон"
             section="seasons"
-            icon={<span className="text-lg">🌤️</span>}
+            icon={null}
             badge={filters.seasons.length}
           >
             <div className="grid gap-2">
               {seasons.map((season) => (
-                <label key={season.value} className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors">
+                <label
+                  key={season.value}
+                  className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors"
+                >
                   <input
                     type="checkbox"
                     checked={filters.seasons.includes(season.value)}
-                    onChange={() => handleArrayFilterChange('seasons', season.value)}
+                    onChange={() =>
+                      handleArrayFilterChange("seasons", season.value)
+                    }
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                   />
-                  <span className="text-lg mr-3">{season.emoji}</span>
-                  <span className="text-sm font-medium text-neutral-black">{season.label}</span>
+                  <span className="text-sm font-medium text-neutral-black">
+                    {season.label}
+                  </span>
                 </label>
               ))}
             </div>
           </FilterSection>
 
           {/* Price Range */}
-          <FilterSection title="Цена" section="price" icon={<span className="text-lg">💰</span>}>
+          <FilterSection title="Цена" section="price" icon={null}>
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-neutral-gray-600 mb-2">От, ₽</label>
+                  <label className="block text-xs font-medium text-neutral-gray-600 mb-2">
+                    От, ₽
+                  </label>
                   <input
                     type="number"
                     value={filters.priceRange[0]}
-                    onChange={(e) => handlePriceChange(Number(e.target.value), 0)}
+                    onChange={(e) =>
+                      handlePriceChange(Number(e.target.value), 0)
+                    }
                     className="w-full px-3 py-2 border border-neutral-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     placeholder="0"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-neutral-gray-600 mb-2">До, ₽</label>
+                  <label className="block text-xs font-medium text-neutral-gray-600 mb-2">
+                    До, ₽
+                  </label>
                   <input
                     type="number"
                     value={filters.priceRange[1]}
-                    onChange={(e) => handlePriceChange(Number(e.target.value), 1)}
+                    onChange={(e) =>
+                      handlePriceChange(Number(e.target.value), 1)
+                    }
                     className="w-full px-3 py-2 border border-neutral-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     placeholder="50000"
                   />
@@ -593,7 +715,15 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               </div>
 
               <div className="text-center text-sm text-neutral-gray-600 bg-neutral-gray-50 p-2 rounded">
-                {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(filters.priceRange[0])} - {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(filters.priceRange[1])}
+                {new Intl.NumberFormat("ru-RU", {
+                  style: "currency",
+                  currency: "RUB",
+                }).format(filters.priceRange[0])}{" "}
+                -{" "}
+                {new Intl.NumberFormat("ru-RU", {
+                  style: "currency",
+                  currency: "RUB",
+                }).format(filters.priceRange[1])}
               </div>
             </div>
           </FilterSection>
@@ -610,13 +740,17 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                 <input
                   type="checkbox"
                   checked={filters.hasDiscount}
-                  onChange={() => handleSpecialFilterChange('hasDiscount')}
+                  onChange={() => handleSpecialFilterChange("hasDiscount")}
                   className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                 />
                 <Percent className="w-5 h-5 mr-3 text-red-500" />
                 <div>
-                  <div className="text-sm font-medium text-neutral-black">Только со скидкой</div>
-                  <div className="text-xs text-neutral-gray-600">Товары с выгодной ценой</div>
+                  <div className="text-sm font-medium text-neutral-black">
+                    Только со скидкой
+                  </div>
+                  <div className="text-xs text-neutral-gray-600">
+                    Товары с выгодной ценой
+                  </div>
                 </div>
               </label>
 
@@ -624,13 +758,17 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                 <input
                   type="checkbox"
                   checked={filters.inStock}
-                  onChange={() => handleSpecialFilterChange('inStock')}
+                  onChange={() => handleSpecialFilterChange("inStock")}
                   className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
                 />
                 <Package className="w-5 h-5 mr-3 text-green-500" />
                 <div>
-                  <div className="text-sm font-medium text-neutral-black">Только в наличии</div>
-                  <div className="text-xs text-neutral-gray-600">Товары доступные для покупки</div>
+                  <div className="text-sm font-medium text-neutral-black">
+                    Только в наличии
+                  </div>
+                  <div className="text-xs text-neutral-gray-600">
+                    Товары доступные для покупки
+                  </div>
                 </div>
               </label>
             </div>

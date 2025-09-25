@@ -58,7 +58,7 @@ app.use(
     origin: function (origin, callback) {
       // Разрешить запросы без origin (например, мобильные приложения)
       if (!origin) return callback(null, true);
-      
+
       // Разрешить все локальные адреса для разработки
       if (
         origin.includes("localhost") ||
@@ -69,12 +69,12 @@ app.use(
       ) {
         return callback(null, true);
       }
-      
+
       // Проверить, есть ли origin в списке разрешенных (для продакшена)
       if (allowedOrigins.indexOf(origin) !== -1) {
         return callback(null, true);
       }
-      
+
       const msg =
         "The CORS policy for this site does not allow access from the specified Origin.";
       return callback(new Error(msg), false);
@@ -92,9 +92,19 @@ app.use(
   })
 );
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// Body parsing middleware with increased timeout for large uploads
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Increase server timeout for large uploads
+app.use((req, res, next) => {
+  // Set timeout to 5 minutes for uploads
+  if (req.method === "POST" || req.method === "PUT") {
+    req.setTimeout(300000); // 5 minutes
+    res.setTimeout(300000); // 5 minutes
+  }
+  next();
+});
 
 // Static files
 app.use("/uploads", express.static("uploads"));
@@ -120,6 +130,25 @@ app.get("/api/health", (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
+
+  // Handle payload too large error
+  if (err.type === "entity.too.large") {
+    return res.status(413).json({
+      error: "Данные слишком большие",
+      message: "Попробуйте уменьшить размер изображений или количество файлов",
+      code: "PAYLOAD_TOO_LARGE",
+    });
+  }
+
+  // Handle other specific errors
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      error: "Файл слишком большой",
+      message: "Максимальный размер файла 50MB",
+      code: "FILE_TOO_LARGE",
+    });
+  }
+
   res.status(500).json({
     error: "Something went wrong!",
     message:

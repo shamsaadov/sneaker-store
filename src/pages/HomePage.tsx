@@ -96,21 +96,21 @@ const HomePage: React.FC = () => {
       rating: 5,
       comment:
         "Отличный магазин! Купил Nike Air Max - качество на высоте, доставка быстрая.",
-      avatar: "👨‍💼",
+      avatar: "АП",
     },
     {
       name: "Мария Иванова",
       rating: 5,
       comment:
         "Заказывала Adidas Stan Smith. Пришли быстро, размер точный. Рекомендую!",
-      avatar: "👩‍💻",
+      avatar: "МИ",
     },
     {
       name: "Дмитрий Козлов",
       rating: 5,
       comment:
         "Большой выбор, приятные цены. Буду заказывать еще. Спасибо за качественный сервис!",
-      avatar: "👨‍🎓",
+      avatar: "ДК",
     },
   ];
 
@@ -174,12 +174,12 @@ const HomePage: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="flex -space-x-2">
-                    {["👨‍💼", "👩‍💻", "👨‍🎓", "👩‍🎨"].map((emoji, i) => (
+                    {["АП", "МИ", "ДК", "ЕС"].map((initials, i) => (
                       <div
                         key={i}
-                        className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center text-xs sm:text-sm border-2 border-white"
+                        className="w-7 h-7 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center text-xs sm:text-sm border-2 border-white text-brand-primary font-semibold"
                       >
-                        {emoji}
+                        {initials}
                       </div>
                     ))}
                   </div>
@@ -429,7 +429,7 @@ const HomePage: React.FC = () => {
                   "{testimonial.comment}"
                 </p>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-primary/10 rounded-full flex items-center justify-center text-lg sm:text-xl">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-primary/10 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold text-brand-primary">
                     {testimonial.avatar}
                   </div>
                   <div>

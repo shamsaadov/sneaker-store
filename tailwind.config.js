@@ -15,6 +15,7 @@ module.exports = {
           primary: "#0957c3",
           light: "#4a90e2",
           dark: "#073a8a",
+          mauve: "#987185",
         },
         neutral: {
           white: "#FFFFFF",

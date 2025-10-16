@@ -114,8 +114,8 @@ const AboutPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-white">
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-br from-brand-primary to-brand-dark text-white overflow-hidden">
-        <div className="absolute inset-0">
+      <section className="relative py-20 bg-brand-primary text-white overflow-hidden">
+        {/* <div className="absolute inset-0">
           {[...Array(15)].map((_, i) => (
             <div
               key={i}
@@ -130,7 +130,7 @@ const AboutPage: React.FC = () => {
               }}
             />
           ))}
-        </div>
+        </div> */}
 
         <div className="relative z-10 container mx-auto px-4 text-center">
           <h1 className="text-5xl lg:text-6xl font-bold mb-6">О Steep step</h1>
@@ -193,8 +193,8 @@ const AboutPage: React.FC = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-brand-primary/20 to-brand-dark/20 rounded-3xl p-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/10 to-transparent" />
+              <div className="bg-brand-primary/20 rounded-3xl p-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-brand-primary/10" />
                 <div className="relative z-10 text-center">
                   <div className="text-6xl mb-4 font-bold text-brand-primary">
                     100K+
@@ -462,7 +462,7 @@ const AboutPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-brand-primary to-brand-dark text-white">
+      <section className="py-20 bg-brand-primary text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Остались вопросы?</h2>
           <p className="text-xl mb-8 opacity-90">

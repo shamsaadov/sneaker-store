@@ -49,48 +49,51 @@ const allowedOrigins = [
   "http://172.31.208.193:5173",
   "http://172.31.208.193:5174",
   "http://172.31.208.193:5175",
+  "https://steepstep.ru/api",
+  "https://www.steepstep.ru/api",
   process.env.FRONTEND_URL,
   process.env.PRODUCTION_URL,
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Разрешить запросы без origin (например, мобильные приложения)
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: function (origin, callback) {
+    console.log("Request origin:", origin);
+    // Разрешить запросы без origin (например, мобильные приложения)
+    if (!origin) return callback(null, true);
 
-      // Разрешить все локальные адреса для разработки
-      if (
-        origin.includes("localhost") ||
-        origin.includes("127.0.0.1") ||
-        origin.match(/^http:\/\/192\.168\.\d+\.\d+:\d+$/) ||
-        origin.match(/^http:\/\/10\.\d+\.\d+\.\d+:\d+$/) ||
-        origin.match(/^http:\/\/172\.\d+\.\d+\.\d+:\d+$/)
-      ) {
-        return callback(null, true);
-      }
+    // Разрешить все локальные адреса для разработки
+    if (
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1") ||
+      origin.match(/^http:\/\/192\.168\.\d+\.\d+:\d+$/) ||
+      origin.match(/^http:\/\/10\.\d+\.\d+\.\d+:\d+$/) ||
+      origin.match(/^http:\/\/172\.\d+\.\d+\.\d+:\d+$/)
+    ) {
+      return callback(null, true);
+    }
 
-      // Проверить, есть ли origin в списке разрешенных (для продакшена)
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        return callback(null, true);
-      }
+    // Проверить, есть ли origin в списке разрешенных (для продакшена)
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
 
-      const msg =
-        "The CORS policy for this site does not allow access from the specified Origin.";
-      return callback(new Error(msg), false);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-    ],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
-  })
-);
+    const msg =
+      "The CORS policy for this site does not allow access from the specified Origin.";
+    return callback(new Error(msg), false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+  ],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+};
+// ПРИМЕНЕНИЕ CORS (это было пропущено)
+app.use(cors(corsOptions));
 
 // Body parsing middleware with increased timeout for large uploads
 app.use(express.json({ limit: "50mb" }));
@@ -172,7 +175,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(
-        `Health check available at http://localhost:${PORT}/api/health`
+        `Health check available at http://localhost:${PORT}/api/health`,
       );
     });
   } catch (error) {

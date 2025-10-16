@@ -166,11 +166,10 @@ const SpecialOrdersInfoPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-br from-brand-primary via-blue-600 to-indigo-700 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
+      <section className="relative py-20 bg-brand-primary text-white overflow-hidden">
 
         {/* Animated background elements */}
-        <div className="absolute inset-0">
+        {/* <div className="absolute inset-0">
           {[...Array(25)].map((_, i) => (
             <div
               key={i}
@@ -185,7 +184,7 @@ const SpecialOrdersInfoPage: React.FC = () => {
               }}
             />
           ))}
-        </div>
+        </div> */}
 
         <div className="relative z-10 container mx-auto px-4 text-center">
           <div className="mb-6 inline-flex items-center px-4 py-2 bg-white/10 rounded-full text-sm font-medium backdrop-blur-sm">
@@ -195,7 +194,7 @@ const SpecialOrdersInfoPage: React.FC = () => {
 
           <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
             Спецзаказы
-            <span className="block text-yellow-300">любой обуви</span>
+            <span className="block ">любой обуви</span>
           </h1>
 
           <p className="text-xl lg:text-2xl max-w-4xl mx-auto leading-relaxed opacity-90 mb-8">
@@ -503,7 +502,7 @@ const SpecialOrdersInfoPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-brand-primary to-blue-600 text-white">
+      <section className="py-20 bg-brand-primary text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">
             Готовы найти свою идеальную пару?

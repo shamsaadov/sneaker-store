@@ -48,7 +48,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center p-4">
+    <div className="min-h-screen bg-brand-primary flex items-center justify-center p-4">
       <div className="bg-neutral-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         {/* Header */}
         <div className="text-center mb-8">

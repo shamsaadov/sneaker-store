@@ -88,7 +88,7 @@ const ContactPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-white">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-brand-primary to-brand-dark text-white">
+      <section className="py-20 bg-brand-primary text-white">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl lg:text-6xl font-bold mb-6">
             Свяжитесь с нами
@@ -325,7 +325,7 @@ const ContactPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-brand-primary to-brand-dark text-white">
+      <section className="py-20 bg-brand-primary text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">
             Не нашли ответ на свой вопрос?

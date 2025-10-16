@@ -245,7 +245,7 @@ const SpecialOrdersPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-white">
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-br from-brand-primary to-brand-dark text-white overflow-hidden">
+      <section className="relative py-20 bg-brand-primary text-white overflow-hidden">
         <div className="absolute inset-0">
           {[...Array(15)].map((_, i) => (
             <div

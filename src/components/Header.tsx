@@ -28,18 +28,47 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
     if (path !== "/" && location.pathname.startsWith(path)) return true;
     return false;
   };
-
+  const heroSlides = [
+    {
+      title: "Новая коллекция Nike Air Max",
+      subtitle: "Максимальный комфорт для каждого шага",
+      image:
+          "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-air-max-90-by-you-shoes.png",
+      discount: "Скидка до 30%",
+    },
+    {
+      title: "Легендарные Air Jordan",
+      subtitle: "Стиль, который никогда не выйдет из моды",
+      image:
+          "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-6xjv8n.png",
+      discount: "Эксклюзивная серия",
+    },
+    {
+      title: "Adidas Stan Smith",
+      subtitle: "Минимализм и элегантность в каждой детали",
+      image:
+          "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/ba8375a1c6b1439a8f9aaf8600a7ad03_9366/Stan_Smith_Shoes_White_FX5500_01_standard.jpg",
+      discount: "Лимитированный выпуск",
+    },
+  ];
   return (
-    <header className="bg-[#073a8a] shadow-lg sticky top-0 z-50">
+    <header className="bg-neutral-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <Link to="/" className="hover:opacity-80 transition-opacity">
+              {/* Desktop logo */}
               <img
                 src="/assets/logo.png"
                 alt="Steep step logo"
-                className="h-12 w-auto"
+                className="hidden md:block h-12 w-auto"
+              />
+              {/* Mobile logo */}
+              <img
+                src="/assets/shortLogo.svg"
+                alt="Steep step logo"
+                className="block md:hidden h-20 w-auto"
               />
             </Link>
           </div>
@@ -52,8 +81,8 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
                 to={link.path}
                 className={`transition-colors font-medium ${
                   isActivePage(link.path)
-                    ? "text-white font-semibold"
-                    : "text-gray-200 hover:text-white"
+                    ? "text-black font-semibold"
+                    : "text-gray-500 hover:text-gray-400"
                 }`}
               >
                 {link.name}

@@ -1,15 +1,16 @@
 import type { Product, Category, FilterOptions } from '../types';
 
 const API_BASE_URL = window.location.hostname === 'localhost' ?
-  'http://localhost:3001/api' :
-  '/api';
+    'https://steepstep.ru/api' :
+    '/api';
 
 class ApiService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('auth_token');
+    // Не указываем Content-Type здесь, чтобы не триггерить CORS preflight на GET
     return {
-      'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
+      Accept: 'application/json',
     };
   }
 
@@ -18,16 +19,23 @@ class ApiService {
 
     const defaultOptions: RequestInit = {
       headers: this.getAuthHeaders(),
+      // mode: 'cors' // по умолчанию для cross-origin
     };
 
     try {
-      const response = await fetch(url, { 
-        ...defaultOptions, 
+      // Добавляем Content-Type только если есть body и метод не GET/HEAD
+      const method = (options.method || 'GET').toUpperCase();
+      const hasBody = options.body !== undefined && options.body !== null;
+      const mergedHeaders: HeadersInit = {
+        ...defaultOptions.headers,
+        ...options.headers,
+        ...((method !== 'GET' && method !== 'HEAD' && hasBody) ? { 'Content-Type': 'application/json' } : {}),
+      };
+
+      const response = await fetch(url, {
+        ...defaultOptions,
         ...options,
-        headers: {
-          ...defaultOptions.headers,
-          ...options.headers,
-        }
+        headers: mergedHeaders,
       });
 
       if (!response.ok) {

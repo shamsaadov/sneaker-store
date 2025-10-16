@@ -111,7 +111,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
               onClick={onCartClick}
               className="relative p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
-              <ShoppingCart className="w-6 h-6 text-white" />
+              <ShoppingCart className="w-6 h-6 text-gray-500" />
               {getCartCount() > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                   {getCartCount()}
@@ -125,9 +125,9 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
               className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
               {isMenuOpen ? (
-                <X className="w-6 h-6 text-white" />
+                <X className="w-6 h-6 text-gray-900" />
               ) : (
-                <Menu className="w-6 h-6 text-white" />
+                <Menu className="w-6 h-6 text-gray-500" />
               )}
             </button>
           </div>
@@ -144,8 +144,8 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
                   onClick={() => setIsMenuOpen(false)}
                   className={`text-left transition-colors font-medium py-2 ${
                     isActivePage(link.path)
-                      ? "text-white font-semibold"
-                      : "text-gray-200 hover:text-white"
+                      ? "text-black font-semibold"
+                      : "text-gray-500 hover:text-gray-400"
                   }`}
                 >
                   {link.name}
@@ -159,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
                     onAdminClick();
                     setIsMenuOpen(false);
                   }}
-                  className="flex items-center space-x-2 text-gray-200 hover:text-white transition-colors font-medium py-2"
+                  className="flex items-center space-x-2 text-gray-500 hover:text-gray-400 transition-colors font-medium py-2"
                 >
                   <Settings className="w-5 h-5" />
                   <span>Админ панель</span>

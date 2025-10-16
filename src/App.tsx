@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import Header from "./components/Header";
 import CartSidebar from "./components/CartSidebar";
+import ScrollToTop from "./components/ScrollToTop";
 import AdminLogin from "./pages/AdminLogin";
 import AdminPanelExtended from "./pages/AdminPanelExtended";
 import HomePage from "./pages/HomePage";
@@ -67,6 +68,7 @@ const StoreLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const AppContent: React.FC = () => {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Admin Routes */}
         <Route path="/admin/*" element={<AdminRoutes />} />

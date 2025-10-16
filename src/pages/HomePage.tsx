@@ -10,6 +10,10 @@ import {
   ArrowRight,
   Play,
   Heart,
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
 } from "lucide-react";
 import type { Product } from "../types";
 import MobileCarousel from "../components/MobileCarousel";
@@ -18,7 +22,7 @@ import apiService from "../utils/api";
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  
+
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -34,8 +38,6 @@ const HomePage: React.FC = () => {
     loadFeaturedProducts();
     setIsVisible(true);
   }, []);
-
-  
 
   // Карусель фона hero (из public/assets/pictures)
   const heroBgImages = [
@@ -75,8 +77,6 @@ const HomePage: React.FC = () => {
     touchStartX.current = null;
     setIsAuto(true);
   };
-
-  
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("ru-RU", {
@@ -154,11 +154,8 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Управление каруселью */}
-        
-        
 
         {/* Индикаторы */}
-        
 
         {/* Контент секции (оставляем ваш текущий) */}
         <div className="relative z-10 container mx-auto px-4 py-8 lg:py-0 min-h-[85vh] lg:min-h-[85vh] flex items-center">
@@ -219,8 +216,6 @@ const HomePage: React.FC = () => {
                 </div>
               </div> */}
             </div>
-
-            
           </div>
         </div>
 
@@ -237,17 +232,28 @@ const HomePage: React.FC = () => {
       <section className="py-10 bg-neutral-gray-50 lg:hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-neutral-black mb-2">Почему выбирают нас?</h2>
-            <p className="text-base text-neutral-gray-600">Мы делаем покупку кроссовок простой, безопасной и приятной</p>
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">
+              Почему выбирают нас?
+            </h2>
+            <p className="text-base text-neutral-gray-600">
+              Мы делаем покупку кроссовок простой, безопасной и приятной
+            </p>
           </div>
           <MobileCarousel
             items={features.map((feature, index) => (
-              <div key={index} className="group bg-neutral-white p-6 rounded-2xl shadow-lg">
+              <div
+                key={index}
+                className="group bg-neutral-white p-6 rounded-2xl shadow-lg"
+              >
                 <div className="w-12 h-12 bg-brand-primary/10 rounded-full flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6 text-brand-primary" />
                 </div>
-                <h3 className="text-lg font-bold text-neutral-black mb-2">{feature.title}</h3>
-                <p className="text-sm text-neutral-gray-600 leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-bold text-neutral-black mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-neutral-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             ))}
           />
@@ -257,8 +263,12 @@ const HomePage: React.FC = () => {
       <section className="py-10 bg-neutral-white lg:hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-neutral-black mb-2">Популярные модели</h2>
-            <p className="text-base text-neutral-gray-600">Самые востребованные кроссовки сезона</p>
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">
+              Популярные модели
+            </h2>
+            <p className="text-base text-neutral-gray-600">
+              Самые востребованные кроссовки сезона
+            </p>
           </div>
           <MobileCarousel
             items={featuredProducts.map((product) => (
@@ -273,9 +283,15 @@ const HomePage: React.FC = () => {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <div className="text-xs text-neutral-gray-500 mb-1">{product.brand}</div>
-                  <h3 className="font-bold text-neutral-black mb-2">{product.name}</h3>
-                  <div className="text-neutral-black font-bold">{formatPrice(product.price)}</div>
+                  <div className="text-xs text-neutral-gray-500 mb-1">
+                    {product.brand}
+                  </div>
+                  <h3 className="font-bold text-neutral-black mb-2">
+                    {product.name}
+                  </h3>
+                  <div className="text-neutral-black font-bold">
+                    {formatPrice(product.price)}
+                  </div>
                 </div>
               </div>
             ))}
@@ -286,23 +302,37 @@ const HomePage: React.FC = () => {
       <section className="py-10 bg-neutral-gray-50 lg:hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-neutral-black mb-2">Отзывы наших клиентов</h2>
-            <p className="text-base text-neutral-gray-600">Что говорят о нас покупатели</p>
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">
+              Отзывы наших клиентов
+            </h2>
+            <p className="text-base text-neutral-gray-600">
+              Что говорят о нас покупатели
+            </p>
           </div>
           <MobileCarousel
             items={testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-neutral-white p-6 rounded-2xl shadow-lg">
+              <div
+                key={index}
+                className="bg-neutral-white p-6 rounded-2xl shadow-lg"
+              >
                 <div className="flex items-center space-x-1 mb-3">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
-                <p className="text-sm text-neutral-gray-700 mb-4 leading-relaxed">"{testimonial.comment}"</p>
+                <p className="text-sm text-neutral-gray-700 mb-4 leading-relaxed">
+                  "{testimonial.comment}"
+                </p>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-brand-primary">
                     {testimonial.avatar}
                   </div>
-                  <div className="text-neutral-black font-semibold">{testimonial.name}</div>
+                  <div className="text-neutral-black font-semibold">
+                    {testimonial.name}
+                  </div>
                 </div>
               </div>
             ))}
@@ -385,7 +415,7 @@ const HomePage: React.FC = () => {
                         {Math.round(
                           ((product.originalPrice - product.price) /
                             product.originalPrice) *
-                            100
+                            100,
                         )}
                         %
                       </span>
@@ -506,29 +536,122 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-brand-primary to-brand-dark text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 sm:mb-6">
-            Готов найти свою идеальную пару?
-          </h2>
-          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto opacity-90">
-            Присоединяйся к тысячам довольных покупателей. Начни свое
-            путешествие в мир стиля уже сегодня.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <button
-              onClick={() => navigate("/catalog")}
-              className="bg-white text-brand-primary px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg hover:bg-neutral-gray-100 transition-all duration-300 hover:scale-105"
-            >
-              Начать покупки
-            </button>
-            <button className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg hover:bg-white hover:text-brand-primary transition-all duration-300">
-              Узнать больше
-            </button>
+      <section className="py-20  bg-gradient-to-r from-brand-primary to-brand-dark text-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-neutral-white mb-4">
+              Контакты
+            </h2>
+            <p className="text-xl text-neutral-white">
+              Мы всегда рады общению с нашими клиентами
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-16">
+            {/* Contact Info */}
+            <div className="space-y-8">
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-brand-light/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-6 h-6 text-neutral-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-neutral-white mb-2">
+                    Главный офис
+                  </h3>
+                  <p className="text-neutral-white">
+                    Проспект Ахмат-Хаджи Кадырова, 106 1 этаж
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-brand-light/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-6 h-6 text-neutral-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-neutral-white mb-2">Телефон</h3>
+                  <p className="text-neutral-white">+7 (937) 505-46-45</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-brand-light/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-6 h-6 text-neutral-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-neutral-white mb-2">Email</h3>
+                  <p className="text-neutral-white">
+                    info@sneakerstore.ru
+                    <br />
+                    support@sneakerstore.ru
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-12 h-12 bg-brand-light/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-6 h-6 text-neutral-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-neutral-white mb-2">
+                    Время работы
+                  </h3>
+                  <p className="text-neutral-white">Ежедневно: 10:00 - 21:00</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Map Placeholder */}
+            <div style={{ position: "relative", overflow: "hidden" }}>
+              <a
+                href="https://yandex.ru/maps/org/steep_step/84114443168/?utm_medium=mapframe&utm_source=maps"
+                style={{
+                  color: "#eee",
+                  fontSize: "12px",
+                  position: "absolute",
+                  top: "0px",
+                }}
+              >
+                Steep step
+              </a>
+              <a
+                href="https://yandex.ru/maps/1106/grozniy/category/shoe_store/184107941/?utm_medium=mapframe&utm_source=maps"
+                style={{
+                  color: "#eee",
+                  fontSize: "12px",
+                  position: "absolute",
+                  top: "14px",
+                }}
+              >
+                Магазин обуви в Грозном
+              </a>
+              <a
+                href="https://yandex.ru/maps/1106/grozniy/category/sportswear_and_shoes/184107341/?utm_medium=mapframe&utm_source=maps"
+                style={{
+                  color: "#eee",
+                  fontSize: "12px",
+                  position: "absolute",
+                  top: "28px",
+                }}
+              >
+                Спортивная одежда и обувь в Грозном
+              </a>
+              <iframe
+                src="https://yandex.ru/map-widget/v1/?indoorLevel=1&ll=45.710306%2C43.300654&mode=search&oid=84114443168&ol=biz&z=16.69"
+                width="560"
+                height="400"
+                frameBorder="1"
+                allowFullScreen
+                style={{ position: "relative" }}
+                title="Yandex Map"
+              />
+            </div>
           </div>
         </div>
       </section>
+
+      {/* CTA Section */}
+      {/*<section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-brand-primary to-brand-dark text-white"></section>*/}
     </div>
   );
 };

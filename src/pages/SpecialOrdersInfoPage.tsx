@@ -16,6 +16,7 @@ import {
   Camera,
   Zap,
 } from "lucide-react";
+import MobileCarousel from "../components/MobileCarousel";
 
 const SpecialOrdersInfoPage: React.FC = () => {
   const features = [
@@ -167,7 +168,6 @@ const SpecialOrdersInfoPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative py-20 bg-brand-primary text-white overflow-hidden">
-
         {/* Animated background elements */}
         {/* <div className="absolute inset-0">
           {[...Array(25)].map((_, i) => (
@@ -243,8 +243,35 @@ const SpecialOrdersInfoPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Reasons Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Reasons Section - Mobile Carousel */}
+      <section className="py-10 bg-gray-50 lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Когда нужен спецзаказ?
+            </h2>
+            <p className="text-base text-gray-600">
+              Множество ситуаций, когда обычные магазины не могут помочь
+            </p>
+          </div>
+
+          <MobileCarousel
+            items={reasons.map((reason, index) => (
+              <div key={index} className="bg-white p-6 rounded-2xl shadow-lg">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">
+                  {reason.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {reason.description}
+                </p>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      {/* Reasons Section - Desktop Grid */}
+      <section className="hidden lg:block py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -273,8 +300,41 @@ const SpecialOrdersInfoPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20">
+      {/* Features Section - Mobile Carousel */}
+      <section className="py-10 bg-white lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Почему выбирают нас?
+            </h2>
+            <p className="text-base text-gray-600">
+              Профессиональный поиск эксклюзивных кроссовок с гарантией качества
+            </p>
+          </div>
+
+          <MobileCarousel
+            items={features.map((feature, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100"
+              >
+                <div className="w-12 h-12 bg-brand-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-brand-primary" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      {/* Features Section - Desktop Grid */}
+      <section className="hidden lg:block py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -306,8 +366,47 @@ const SpecialOrdersInfoPage: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-gray-50">
+      {/* How It Works - Mobile Carousel */}
+      <section id="how-it-works" className="py-10 bg-gray-50 lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Как работает спецзаказ?
+            </h2>
+            <p className="text-base text-gray-600">
+              Простой и прозрачный процесс от заявки до получения
+            </p>
+          </div>
+
+          <MobileCarousel
+            items={processSteps.map((step, index) => (
+              <div
+                key={index}
+                className="relative text-center bg-white p-6 rounded-2xl shadow-lg"
+              >
+                {/* Step Circle */}
+                <div className="relative z-10 w-16 h-16 bg-brand-primary rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4 shadow-lg">
+                  <step.icon className="w-6 h-6" />
+                </div>
+
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-white border-4 border-brand-primary rounded-full flex items-center justify-center font-bold text-brand-primary text-xs">
+                  {step.number}
+                </div>
+
+                <h3 className="text-lg font-bold text-gray-900 mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {step.description}
+                </p>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      {/* How It Works - Desktop */}
+      <section className="hidden lg:block py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -347,8 +446,80 @@ const SpecialOrdersInfoPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Success Cases */}
-      <section className="py-20">
+      {/* Success Cases - Mobile Carousel */}
+      <section className="py-10 bg-white lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Успешные кейсы
+            </h2>
+            <p className="text-base text-gray-600">
+              Реальные примеры найденных для клиентов кроссовок
+            </p>
+          </div>
+
+          <MobileCarousel
+            items={successCases.map((case_, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl shadow-lg overflow-hidden"
+              >
+                <div className="aspect-video overflow-hidden relative">
+                  <img
+                    src={case_.image}
+                    alt={case_.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
+                    {case_.region}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <h3 className="font-bold text-gray-900 mb-3 text-base leading-tight">
+                    {case_.title}
+                  </h3>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Срок поиска:</span>
+                      <span className="font-medium">{case_.timeFrame}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Стоимость:</span>
+                      <span className="font-bold text-brand-primary text-lg">
+                        {case_.price}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Сложность:</span>
+                      <span
+                        className={`font-medium px-2 py-1 rounded text-xs ${
+                          case_.difficulty === "Очень высокая"
+                            ? "bg-red-100 text-red-600"
+                            : case_.difficulty === "Высокая"
+                              ? "bg-orange-100 text-orange-600"
+                              : "bg-yellow-100 text-yellow-600"
+                        }`}
+                      >
+                        {case_.difficulty}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center text-green-600 text-sm font-medium">
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Успешно найдено и доставлено
+                  </div>
+                </div>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      {/* Success Cases - Desktop Grid */}
+      <section className="hidden lg:block py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -419,8 +590,92 @@ const SpecialOrdersInfoPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-20 bg-gray-50">
+      {/* Pricing - Mobile Carousel */}
+      <section className="py-10 bg-gray-50 lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Прозрачное ценообразование
+            </h2>
+            <p className="text-base text-gray-600">
+              Без скрытых комиссий и доплат
+            </p>
+          </div>
+
+          <MobileCarousel
+            items={[
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-lg">
+                <div className="text-green-600 font-bold text-sm uppercase tracking-wide mb-4">
+                  Обычный поиск
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">
+                  7-14
+                </div>
+                <div className="text-gray-600 mb-6">дней</div>
+                <div className="space-y-3 text-sm text-gray-600 mb-6">
+                  <div>• Поиск среди основных поставщиков</div>
+                  <div>• Бесплатная предварительная оценка</div>
+                  <div>• Стандартная доставка включена</div>
+                  <div>• Без доплат за срочность</div>
+                </div>
+              </div>,
+              <div className="bg-brand-primary text-white rounded-2xl p-6 text-center relative shadow-lg">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs font-bold">
+                  ПОПУЛЯРНО
+                </div>
+                <div className="text-yellow-200 font-bold text-sm uppercase tracking-wide mb-4">
+                  Срочный поиск
+                </div>
+                <div className="text-3xl font-bold mb-2">3-7</div>
+                <div className="text-blue-100 mb-6">дней</div>
+                <div className="space-y-3 text-sm text-blue-100 mb-6">
+                  <div>• Приоритетный поиск</div>
+                  <div>• Расширенная сеть поставщиков</div>
+                  <div>• Экспресс-доставка курьером</div>
+                  <div className="text-yellow-200 font-medium">
+                    • +20% к стоимости товара
+                  </div>
+                </div>
+              </div>,
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-lg">
+                <div className="text-red-600 font-bold text-sm uppercase tracking-wide mb-4">
+                  Экстренный поиск
+                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">1-3</div>
+                <div className="text-gray-600 mb-6">дня</div>
+                <div className="space-y-3 text-sm text-gray-600 mb-6">
+                  <div>• Максимальный приоритет</div>
+                  <div>• Все возможные каналы поиска</div>
+                  <div>• Курьерская доставка в день</div>
+                  <div className="text-red-600 font-medium">
+                    • +50% к стоимости товара
+                  </div>
+                </div>
+              </div>,
+            ]}
+          />
+
+          <div className="text-center mt-8">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-3xl mx-auto">
+              <div className="text-blue-800 font-semibold mb-2 text-base">
+                Как формируется цена?
+              </div>
+              <div className="text-blue-700 leading-relaxed text-sm">
+                <strong>
+                  Цена товара + наша комиссия 15% + доставка + доплата за
+                  срочность (если выбрана).
+                </strong>
+                <br />
+                Предоплата составляет 50% от итоговой суммы. Остальные 50%
+                оплачиваете при получении товара.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing - Desktop Grid */}
+      <section className="hidden lg:block py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -516,7 +771,7 @@ const SpecialOrdersInfoPage: React.FC = () => {
             <div className="bg-white/10 p-6 rounded-xl backdrop-blur-sm">
               <Phone className="w-8 h-8 mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2">Телефон консультации</h3>
-              <p className="text-2xl font-bold mb-1">+7 (495) 123-45-67</p>
+              <p className="text-2xl font-bold mb-1">+7(937) 505-46-45</p>
               <p className="text-sm opacity-80">Ежедневно с 10:00 до 22:00</p>
             </div>
 

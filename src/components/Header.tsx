@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
     { name: "Спецзаказы", path: "/special-orders-info" },
-    { name: "О нас", path: "/about" },
+    // { name: "О нас", path: "/about" },
     // { name: "Контакты", path: "/contact" },
   ];
 
@@ -33,21 +33,21 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
       title: "Новая коллекция Nike Air Max",
       subtitle: "Максимальный комфорт для каждого шага",
       image:
-          "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-air-max-90-by-you-shoes.png",
+        "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-air-max-90-by-you-shoes.png",
       discount: "Скидка до 30%",
     },
     {
       title: "Легендарные Air Jordan",
       subtitle: "Стиль, который никогда не выйдет из моды",
       image:
-          "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-6xjv8n.png",
+        "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-jordan-1-retro-high-og-shoes-6xjv8n.png",
       discount: "Эксклюзивная серия",
     },
     {
       title: "Adidas Stan Smith",
       subtitle: "Минимализм и элегантность в каждой детали",
       image:
-          "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/ba8375a1c6b1439a8f9aaf8600a7ad03_9366/Stan_Smith_Shoes_White_FX5500_01_standard.jpg",
+        "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/ba8375a1c6b1439a8f9aaf8600a7ad03_9366/Stan_Smith_Shoes_White_FX5500_01_standard.jpg",
       discount: "Лимитированный выпуск",
     },
   ];
@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
                 to={link.path}
                 className={`transition-colors font-medium ${
                   isActivePage(link.path)
-                    ? "text-black font-semibold"
+                    ? "text-brand-primary font-semibold"
                     : "text-gray-500 hover:text-gray-400"
                 }`}
               >
@@ -91,14 +91,14 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
           </nav>
 
           {/* Right Section */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ">
             {/* Admin Button */}
             <button
               onClick={onAdminClick}
-              className="group relative p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="group relative p-2   hover:bg-white/10 rounded-lg transition-colors"
               title="Админ панель"
             >
-              <Settings className="w-6 h-6 text-white group-hover:text-gray-200 transition-colors" />
+              <Settings className="w-6 h-6 text-gray-500 font-semibold group-hover:text-gray-400 transition-colors" />
 
               {/* Tooltip */}
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-neutral-black text-neutral-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">

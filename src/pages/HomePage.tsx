@@ -12,6 +12,7 @@ import {
   Heart,
 } from "lucide-react";
 import type { Product } from "../types";
+import MobileCarousel from "../components/MobileCarousel";
 import apiService from "../utils/api";
 
 const HomePage: React.FC = () => {
@@ -154,26 +155,10 @@ const HomePage: React.FC = () => {
 
         {/* Управление каруселью */}
         
-        <button
-          type="button"
-          aria-label="Следующий фон"
-          onClick={() => { setIsAuto(false); goNext(); }}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur flex items-center justify-center"
-        >
-          ›
-        </button>
+        
 
         {/* Индикаторы */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex gap-2">
-          {heroBgImages.map((_, i) => (
-            <button
-              key={i}
-              aria-label={`Перейти к фону ${i + 1}`}
-              onClick={() => { setIsAuto(false); setBgIndex(i); }}
-              className={`h-2.5 rounded-full transition-all ${i === bgIndex ? "w-8 bg-white" : "w-2.5 bg-white/50"}`}
-            />
-          ))}
-        </div>
+        
 
         {/* Контент секции (оставляем ваш текущий) */}
         <div className="relative z-10 container mx-auto px-4 py-8 lg:py-0 min-h-[85vh] lg:min-h-[85vh] flex items-center">
@@ -248,8 +233,85 @@ const HomePage: React.FC = () => {
         {/*</div>*/}
       </section>
 
+      {/* Мобильные карусели в каждой секции */}
+      <section className="py-10 bg-neutral-gray-50 lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">Почему выбирают нас?</h2>
+            <p className="text-base text-neutral-gray-600">Мы делаем покупку кроссовок простой, безопасной и приятной</p>
+          </div>
+          <MobileCarousel
+            items={features.map((feature, index) => (
+              <div key={index} className="group bg-neutral-white p-6 rounded-2xl shadow-lg">
+                <div className="w-12 h-12 bg-brand-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-brand-primary" />
+                </div>
+                <h3 className="text-lg font-bold text-neutral-black mb-2">{feature.title}</h3>
+                <p className="text-sm text-neutral-gray-600 leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      <section className="py-10 bg-neutral-white lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">Популярные модели</h2>
+            <p className="text-base text-neutral-gray-600">Самые востребованные кроссовки сезона</p>
+          </div>
+          <MobileCarousel
+            items={featuredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="group bg-neutral-white rounded-xl overflow-hidden cursor-pointer shadow-lg"
+                onClick={() => navigate(`/product/${product.id}`)}
+              >
+                <img
+                  src={product.images[0] || "/api/placeholder/400/300"}
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <div className="text-xs text-neutral-gray-500 mb-1">{product.brand}</div>
+                  <h3 className="font-bold text-neutral-black mb-2">{product.name}</h3>
+                  <div className="text-neutral-black font-bold">{formatPrice(product.price)}</div>
+                </div>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      <section className="py-10 bg-neutral-gray-50 lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">Отзывы наших клиентов</h2>
+            <p className="text-base text-neutral-gray-600">Что говорят о нас покупатели</p>
+          </div>
+          <MobileCarousel
+            items={testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-neutral-white p-6 rounded-2xl shadow-lg">
+                <div className="flex items-center space-x-1 mb-3">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-neutral-gray-700 mb-4 leading-relaxed">"{testimonial.comment}"</p>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-brand-primary">
+                    {testimonial.avatar}
+                  </div>
+                  <div className="text-neutral-black font-semibold">{testimonial.name}</div>
+                </div>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-neutral-gray-50">
+      <section className="hidden lg:block py-12 sm:py-16 lg:py-20 bg-neutral-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-black mb-3 lg:mb-4">
@@ -282,7 +344,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-neutral-white">
+      <section className="hidden lg:block py-12 sm:py-16 lg:py-20 bg-neutral-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-12">
             <div className="text-center sm:text-left mb-6 sm:mb-0">
@@ -397,7 +459,7 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-neutral-gray-50">
+      <section className="hidden lg:block py-12 sm:py-16 lg:py-20 bg-neutral-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-black mb-3 lg:mb-4">

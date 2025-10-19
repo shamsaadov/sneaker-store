@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -12,6 +12,54 @@ import {
 import type { FilterOptions, ProductType } from "../types";
 import { PRODUCT_TYPE_CONFIGS } from "../types";
 
+// Отдельный компонент для ползунка цены
+const PriceSlider = memo<{
+  min: number;
+  max: number;
+  value: number;
+  index: number;
+  onChange: (value: number, index: number) => void;
+}>(({ min, max, value, index, onChange }) => {
+  const [localValue, setLocalValue] = useState(value);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = Number(e.target.value);
+    setLocalValue(newValue);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = window.setTimeout(() => {
+      onChange(newValue, index);
+    }, 500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <input
+      type="range"
+      min={min}
+      max={max}
+      value={localValue}
+      onChange={handleChange}
+      className="w-full accent-brand-primary cursor-pointer"
+    />
+  );
+});
+
 interface ProductFiltersProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
@@ -19,6 +67,30 @@ interface ProductFiltersProps {
   priceRange: [number, number];
   isOpen: boolean;
   onToggle: () => void;
+  expandedSections: {
+    sort: boolean;
+    productType: boolean;
+    gender: boolean;
+    brands: boolean;
+    sizes: boolean;
+    price: boolean;
+    colors: boolean;
+    materials: boolean;
+    seasons: boolean;
+    special: boolean;
+  };
+  onExpandedSectionsChange: (sections: {
+    sort: boolean;
+    productType: boolean;
+    gender: boolean;
+    brands: boolean;
+    sizes: boolean;
+    price: boolean;
+    colors: boolean;
+    materials: boolean;
+    seasons: boolean;
+    special: boolean;
+  }) => void;
 }
 
 const ProductFilters: React.FC<ProductFiltersProps> = ({
@@ -28,25 +100,22 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   priceRange,
   isOpen,
   onToggle,
+  expandedSections,
+  onExpandedSectionsChange,
 }) => {
-  const [expandedSections, setExpandedSections] = useState({
-    sort: true,
-    productType: true,
-    gender: true,
-    brands: true,
-    sizes: true,
-    price: true,
-    colors: false,
-    materials: false,
-    seasons: false,
-    special: false,
-  });
+  // Локальное состояние для ползунков цены
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>(filters.priceRange);
+
+  // Обновляем локальное состояние при изменении фильтров извне
+  useEffect(() => {
+    setTempPriceRange(filters.priceRange);
+  }, [filters.priceRange]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+    onExpandedSectionsChange({
+      ...expandedSections,
+      [section]: !expandedSections[section],
+    });
   };
 
   // Размерные ряды для обуви
@@ -140,7 +209,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         allSizes.push(
           ...shoeSizeRanges.kids,
           ...shoeSizeRanges.women,
-          ...shoeSizeRanges.men
+          ...shoeSizeRanges.men,
         );
       }
     }
@@ -178,7 +247,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       FilterOptions,
       "brands" | "colors" | "materials" | "seasons"
     >,
-    value: string
+    value: string,
   ) => {
     const currentArray = filters[filterKey] as string[];
     const newArray = currentArray.includes(value)
@@ -225,14 +294,28 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   };
 
   const handlePriceChange = (value: number, index: number) => {
-    const newPriceRange: [number, number] = [...filters.priceRange];
-    newPriceRange[index] = value;
+    const newPriceRange: [number, number] = index === 0 
+      ? [value, tempPriceRange[1]] 
+      : [tempPriceRange[0], value];
+    
+    setTempPriceRange(newPriceRange);
     onFiltersChange({ ...filters, priceRange: newPriceRange });
+  };
+
+  const handlePriceInputChange = (value: number, index: number) => {
+    const newPriceRange: [number, number] = index === 0 
+      ? [value, tempPriceRange[1]] 
+      : [tempPriceRange[0], value];
+    setTempPriceRange(newPriceRange);
+  };
+
+  const handlePriceInputCommit = () => {
+    onFiltersChange({ ...filters, priceRange: tempPriceRange });
   };
 
   const handleSortChange = (
     sortBy: FilterOptions["sortBy"],
-    sortOrder: FilterOptions["sortOrder"]
+    sortOrder: FilterOptions["sortOrder"],
   ) => {
     onFiltersChange({ ...filters, sortBy, sortOrder });
   };
@@ -296,7 +379,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         <div className="flex items-center space-x-2">
           {icon}
           <span>{title}</span>
-          {badge && badge > 0 && (
+          {badge !== undefined && badge > 0 && (
             <span className="bg-brand-primary text-white text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
               {badge}
             </span>
@@ -346,22 +429,12 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               <Filter className="w-6 h-6 mr-3 text-brand-primary" />
               Фильтры
             </h3>
-            <div className="flex items-center space-x-3">
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-brand-primary hover:text-brand-dark font-medium transition-colors"
-                >
-                  Очистить все
-                </button>
-              )}
-              <button
-                onClick={onToggle}
-                className="lg:hidden p-2 hover:bg-neutral-gray-200 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            <button
+              onClick={onToggle}
+              className="lg:hidden p-2 hover:bg-neutral-gray-200 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
           {hasActiveFilters && (
             <div className="mt-2 text-sm text-neutral-gray-600">
@@ -424,7 +497,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                     onChange={() =>
                       handleSortChange(
                         option.value as FilterOptions["sortBy"],
-                        option.order
+                        option.order,
                       )
                     }
                     className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
@@ -571,26 +644,22 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             icon={null}
             badge={filters.colors.length}
           >
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid gap-2">
               {colors.map((color) => (
                 <button
                   key={color.value}
                   onClick={() => handleArrayFilterChange("colors", color.value)}
-                  className={`group relative flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                  className={`group relative flex items-center space-x-3 p-2 rounded-lg border-2 transition-all hover:scale-105 ${
                     filters.colors.includes(color.value)
                       ? "border-brand-primary bg-brand-primary/10"
                       : "border-neutral-gray-200 hover:border-neutral-gray-300"
                   }`}
                 >
                   <div
-                    className={`w-8 h-8 rounded-full border-2 mb-1 ${
-                      color.value === "белый"
-                        ? "border-neutral-gray-300"
-                        : "border-transparent"
-                    }`}
+                    className="w-8 h-8 rounded-full border-2 border-neutral-gray-300 flex-shrink-0"
                     style={{ backgroundColor: color.color }}
                   />
-                  <span className="text-xs text-neutral-black text-center leading-tight">
+                  <span className="text-sm text-neutral-black font-medium">
                     {color.label}
                   </span>
                   {filters.colors.includes(color.value) && (
@@ -671,10 +740,11 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                   </label>
                   <input
                     type="number"
-                    value={filters.priceRange[0]}
+                    value={tempPriceRange[0]}
                     onChange={(e) =>
-                      handlePriceChange(Number(e.target.value), 0)
+                      handlePriceInputChange(Number(e.target.value), 0)
                     }
+                    onBlur={handlePriceInputCommit}
                     className="w-full px-3 py-2 border border-neutral-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     placeholder="0"
                   />
@@ -685,10 +755,11 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                   </label>
                   <input
                     type="number"
-                    value={filters.priceRange[1]}
+                    value={tempPriceRange[1]}
                     onChange={(e) =>
-                      handlePriceChange(Number(e.target.value), 1)
+                      handlePriceInputChange(Number(e.target.value), 1)
                     }
+                    onBlur={handlePriceInputCommit}
                     className="w-full px-3 py-2 border border-neutral-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                     placeholder="50000"
                   />
@@ -696,21 +767,19 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               </div>
 
               <div className="space-y-3">
-                <input
-                  type="range"
+                <PriceSlider
                   min={priceRange[0]}
                   max={priceRange[1]}
                   value={filters.priceRange[0]}
-                  onChange={(e) => handlePriceChange(Number(e.target.value), 0)}
-                  className="w-full accent-brand-primary"
+                  index={0}
+                  onChange={handlePriceChange}
                 />
-                <input
-                  type="range"
+                <PriceSlider
                   min={priceRange[0]}
                   max={priceRange[1]}
                   value={filters.priceRange[1]}
-                  onChange={(e) => handlePriceChange(Number(e.target.value), 1)}
-                  className="w-full accent-brand-primary"
+                  index={1}
+                  onChange={handlePriceChange}
                 />
               </div>
 
@@ -718,12 +787,12 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                 {new Intl.NumberFormat("ru-RU", {
                   style: "currency",
                   currency: "RUB",
-                }).format(filters.priceRange[0])}{" "}
+                }).format(tempPriceRange[0])}{" "}
                 -{" "}
                 {new Intl.NumberFormat("ru-RU", {
                   style: "currency",
                   currency: "RUB",
-                }).format(filters.priceRange[1])}
+                }).format(tempPriceRange[1])}
               </div>
             </div>
           </FilterSection>
@@ -774,6 +843,19 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             </div>
           </FilterSection>
         </div>
+
+        {/* Кнопка очистки всех фильтров */}
+        {hasActiveFilters && (
+          <div className="px-6 pb-4">
+            <button
+              onClick={clearFilters}
+              className="w-full flex items-center justify-center space-x-2 px-3 py-2 text-xs font-semibold text-white bg-brand-primary hover:bg-brand-dark rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <X className="w-4 h-4" />
+              <span>Очистить все фильтры</span>
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Grid, List } from 'lucide-react';
 import type { Product, FilterOptions } from '../types';
 import ProductCard from './ProductCard';
@@ -13,10 +13,25 @@ interface ProductCatalogProps {
 const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Состояние для раскрытых секций фильтров
+  const [expandedFilterSections, setExpandedFilterSections] = useState({
+    sort: false,
+    productType: false,
+    gender: false,
+    brands: false,
+    sizes: false,
+    price: false,
+    colors: false,
+    materials: false,
+    seasons: false,
+    special: false,
+  });
 
   const [filters, setFilters] = useState<FilterOptions>({
     brands: [],
@@ -88,7 +103,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery }) => {
   useEffect(() => {
     const loadFilteredProducts = async () => {
       try {
-        setLoading(true);
+        setProductsLoading(true);
         const apiService = (await import('../utils/api')).default;
 
         let data: Product[];
@@ -120,7 +135,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery }) => {
         console.error('Error loading filtered products:', error);
         setFilteredProducts([]);
       } finally {
-        setLoading(false);
+        setProductsLoading(false);
       }
     };
 
@@ -161,6 +176,8 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery }) => {
             priceRange={priceRange}
             isOpen={isFiltersOpen}
             onToggle={() => setIsFiltersOpen(!isFiltersOpen)}
+            expandedSections={expandedFilterSections}
+            onExpandedSectionsChange={setExpandedFilterSections}
           />
         </div>
 
@@ -204,7 +221,13 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery }) => {
           </div>
 
           {/* Products Grid */}
-          {filteredProducts.length === 0 ? (
+          {productsLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {[...Array(8)].map((_, index) => (
+                <div key={index} className="bg-neutral-gray-200 animate-pulse rounded-lg h-96"></div>
+              ))}
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-neutral-gray-500 mb-4">
                 {searchQuery
@@ -244,7 +267,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery }) => {
           ) : (
             <div className={
               viewMode === 'grid'
-                ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6'
+                ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
                 : 'space-y-4'
             }>
               {filteredProducts.map((product) => (

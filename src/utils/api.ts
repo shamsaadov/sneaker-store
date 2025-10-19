@@ -1,17 +1,18 @@
 import type { Product, Category, FilterOptions } from '../types';
 
-const API_BASE_URL = window.location.hostname === 'localhost' ?
-    'https://steepstep.ru/api' :
-    '/api';
+const API_BASE_URL = '/api'; // Всегда используем прокси через Vite
 
 class ApiService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('auth_token');
-    // Не указываем Content-Type здесь, чтобы не триггерить CORS preflight на GET
-    return {
-      ...(token && { Authorization: `Bearer ${token}` }),
-      Accept: 'application/json',
-    };
+    // Минимальный набор заголовков для избежания preflight запросов
+    const headers: HeadersInit = {};
+    
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return headers;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -19,18 +20,21 @@ class ApiService {
 
     const defaultOptions: RequestInit = {
       headers: this.getAuthHeaders(),
-      // mode: 'cors' // по умолчанию для cross-origin
     };
 
-    try {
+    try { 
       // Добавляем Content-Type только если есть body и метод не GET/HEAD
       const method = (options.method || 'GET').toUpperCase();
       const hasBody = options.body !== undefined && options.body !== null;
       const mergedHeaders: HeadersInit = {
         ...defaultOptions.headers,
         ...options.headers,
-        ...((method !== 'GET' && method !== 'HEAD' && hasBody) ? { 'Content-Type': 'application/json' } : {}),
       };
+      
+      // Добавляем Content-Type только для POST/PUT/PATCH с телом
+      if (hasBody && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        (mergedHeaders as any)['Content-Type'] = 'application/json';
+      }
 
       const response = await fetch(url, {
         ...defaultOptions,

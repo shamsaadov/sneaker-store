@@ -1,9 +1,9 @@
-import type React from 'react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Heart, ShoppingCart } from 'lucide-react';
-import type { Product } from '../types';
-import { useCart } from '../context/CartContext';
+import type React from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Heart, ShoppingCart } from "lucide-react";
+import type { Product } from "../types";
+import { useCart } from "../context/CartContext";
 
 interface ProductCardProps {
   product: Product;
@@ -14,7 +14,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<string | number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | number | null>(
+    null,
+  );
 
   const handleCardClick = () => {
     navigate(`/product/${product.id}`);
@@ -42,9 +44,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
+    return new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
     }).format(price);
   };
 
@@ -56,7 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
       {/* Image Container */}
       <div className="relative overflow-hidden">
         <img
-          src={product.images[0] || '/api/placeholder/300/300'}
+          src={product.images[0] || "/api/placeholder/300/300"}
           alt={product.name}
           className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
         />
@@ -67,14 +69,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
           className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 bg-neutral-white/80 hover:bg-neutral-white rounded-full transition-colors"
         >
           <Heart
-            className={`w-4 h-4 sm:w-5 sm:h-5 ${isLiked ? 'fill-red-500 text-red-500' : 'text-neutral-gray-600'}`}
+            className={`w-4 h-4 sm:w-5 sm:h-5 ${isLiked ? "fill-red-500 text-red-500" : "text-neutral-gray-600"}`}
           />
         </button>
 
         {/* Sale Badge */}
         {product.originalPrice && product.originalPrice > product.price && (
           <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-red-500 text-neutral-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm font-semibold">
-            -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+            -
+            {Math.round(
+              ((product.originalPrice - product.price) /
+                product.originalPrice) *
+                100,
+            )}
+            %
           </div>
         )}
 
@@ -84,7 +92,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
             onClick={handleAddToCart}
             className="bg-brand-primary text-neutral-white px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg font-semibold hover:bg-brand-dark transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300 text-sm sm:text-base"
           >
-            {selectedSize ? `Добавить размер ${selectedSize}` : 'Выбрать размер'}
+            {selectedSize
+              ? `Добавить размер ${selectedSize}`
+              : "Выбрать размер"}
           </button>
         </div>
       </div>
@@ -101,11 +111,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
           {product.name}
         </h3>
 
-
-
         {/* Size Selection */}
         <div className="mb-2 sm:mb-3">
-          <div className="text-xs sm:text-sm text-neutral-gray-600 mb-1">Размер:</div>
+          <div className="text-xs sm:text-sm text-neutral-gray-600 mb-1">
+            Размер:
+          </div>
           <div className="flex flex-wrap gap-1">
             {product.sizes.slice(0, 4).map((size) => (
               <button
@@ -113,8 +123,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
                 onClick={(e) => handleSizeSelect(e, size)}
                 className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs border rounded transition-colors ${
                   selectedSize === size
-                    ? 'border-brand-primary bg-brand-primary text-neutral-white'
-                    : 'border-neutral-gray-300 text-neutral-gray-600 hover:border-brand-primary'
+                    ? "border-brand-primary bg-brand-primary text-neutral-white"
+                    : "border-neutral-gray-300 text-neutral-gray-600 hover:border-brand-primary"
                 }`}
               >
                 {size}
@@ -134,11 +144,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
             <span className="text-base sm:text-lg font-bold text-neutral-black">
               {formatPrice(product.price)}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs sm:text-sm text-neutral-gray-500 line-through">
-                {formatPrice(product.originalPrice)}
-              </span>
-            )}
           </div>
 
           {/* Add to Cart Button */}
@@ -148,6 +153,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
           >
             <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
+        </div>
+        <div>
+          <span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-xs sm:text-sm text-neutral-gray-500 line-through">
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </span>
         </div>
       </div>
     </div>

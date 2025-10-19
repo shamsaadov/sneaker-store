@@ -64,14 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         />
 
         {/* Favorite Button */}
-        <button
-          onClick={handleLike}
-          className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 bg-neutral-white/80 hover:bg-neutral-white rounded-full transition-colors"
-        >
-          <Heart
-            className={`w-4 h-4 sm:w-5 sm:h-5 ${isLiked ? "fill-red-500 text-red-500" : "text-neutral-gray-600"}`}
-          />
-        </button>
+        
 
         {/* Sale Badge */}
         {product.originalPrice && product.originalPrice > product.price && (

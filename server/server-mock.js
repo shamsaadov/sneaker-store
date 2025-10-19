@@ -173,6 +173,18 @@ const mockProducts = [
   }
 ];
 
+// Создаем копии товаров для тестирования lazy loading
+const allProducts = [];
+for (let i = 0; i < 10; i++) {
+  mockProducts.forEach((product, index) => {
+    allProducts.push({
+      ...product,
+      id: i * mockProducts.length + product.id,
+      name: i === 0 ? product.name : `${product.name} (копия ${i})`
+    });
+  });
+}
+
 // Helper functions
 const filterProducts = (products, filters = {}) => {
   let filtered = [...products];
@@ -244,11 +256,18 @@ const filterProducts = (products, filters = {}) => {
 // Products
 app.get('/api/products', (req, res) => {
   try {
-    const filtered = filterProducts(mockProducts, req.query);
+    const filtered = filterProducts(allProducts, req.query);
+    
+    // Поддержка пагинации
+    const limit = parseInt(req.query.limit) || filtered.length;
+    const offset = parseInt(req.query.offset) || 0;
+    const paginated = filtered.slice(offset, offset + limit);
+    
     res.json({
       success: true,
-      data: filtered,
-      count: filtered.length
+      data: paginated,
+      count: paginated.length,
+      total: filtered.length
     });
   } catch (error) {
     res.status(500).json({
@@ -261,7 +280,7 @@ app.get('/api/products', (req, res) => {
 
 app.get('/api/products/:id', (req, res) => {
   try {
-    const product = mockProducts.find(p => p.id === parseInt(req.params.id));
+    const product = allProducts.find(p => p.id === parseInt(req.params.id));
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -284,7 +303,7 @@ app.get('/api/products/:id', (req, res) => {
 app.get('/api/products/search/:term', (req, res) => {
   try {
     const searchTerm = req.params.term;
-    const filtered = filterProducts(mockProducts, { search: searchTerm });
+    const filtered = filterProducts(allProducts, { search: searchTerm });
     const limited = filtered.slice(0, parseInt(req.query.limit) || 20);
 
     res.json({
@@ -323,7 +342,7 @@ app.get('/api/products/featured/list', (req, res) => {
 
 app.get('/api/products/filters/brands', (req, res) => {
   try {
-    const brands = [...new Set(mockProducts.map(p => p.brand))].sort();
+    const brands = [...new Set(allProducts.map(p => p.brand))].sort();
     res.json({
       success: true,
       data: brands
@@ -339,7 +358,7 @@ app.get('/api/products/filters/brands', (req, res) => {
 
 app.get('/api/products/filters/sizes', (req, res) => {
   try {
-    const allSizes = mockProducts.flatMap(p => p.sizes);
+    const allSizes = allProducts.flatMap(p => p.sizes);
     const uniqueSizes = [...new Set(allSizes)].sort((a, b) => a - b);
     res.json({
       success: true,
@@ -356,7 +375,7 @@ app.get('/api/products/filters/sizes', (req, res) => {
 
 app.get('/api/products/filters/price-range', (req, res) => {
   try {
-    const prices = mockProducts.map(p => p.price);
+    const prices = allProducts.map(p => p.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     res.json({

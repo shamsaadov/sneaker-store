@@ -268,8 +268,24 @@ const seedData = async () => {
       console.log(`Created product: ${product.name}`);
     }
 
+    // Создаем копии товаров для тестирования lazy loading
+    console.log('Creating duplicate products for testing...');
+    const duplicateCount = 5; // Умножаем количество товаров в 5 раз
+    
+    for (let i = 1; i <= duplicateCount; i++) {
+      for (const productData of products) {
+        const duplicatedProduct = {
+          ...productData,
+          name: `${productData.name} (копия ${i})`,
+        };
+        const product = await Product.create(duplicatedProduct);
+        console.log(`Created duplicate product: ${product.name}`);
+      }
+    }
+
+    const totalProducts = products.length * (duplicateCount + 1);
     console.log('Database seeded successfully!');
-    console.log(`Created ${createdCategories.length} categories and ${products.length} products`);
+    console.log(`Created ${createdCategories.length} categories and ${totalProducts} products`);
 
   } catch (error) {
     console.error('Error seeding database:', error);

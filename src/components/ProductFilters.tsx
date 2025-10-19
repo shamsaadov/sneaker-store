@@ -371,7 +371,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     icon?: React.ReactNode;
     badge?: number;
   }> = ({ title, section, children, icon, badge }) => (
-    <div className="border-b border-neutral-gray-200 pb-6 last:border-b-0">
+    <div className="border-b border-neutral-gray-200  last:border-b-0">
       <button
         onClick={() => toggleSection(section)}
         className="flex items-center justify-between w-full text-left font-semibold text-neutral-black mb-4 hover:text-brand-primary transition-colors"
@@ -568,7 +568,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           <FilterSection
             title="Бренды"
             section="brands"
-            icon={<Star className="w-4 h-4" />}
             badge={filters.brands.length}
           >
             <div className="max-h-48 overflow-y-auto space-y-2">

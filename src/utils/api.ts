@@ -65,7 +65,7 @@ class ApiService {
   }
 
   // Products API
-  async getProducts(filters?: Partial<FilterOptions>): Promise<Product[]> {
+  async getProducts(filters?: Partial<FilterOptions & { limit?: number; offset?: number }>): Promise<Product[]> {
     const params = new URLSearchParams();
 
     if (filters) {
@@ -78,6 +78,8 @@ class ApiService {
       if (filters.categories?.length) params.append('categories', filters.categories.join(','));
       if (filters.sortBy) params.append('sort_by', filters.sortBy);
       if (filters.sortOrder) params.append('sort_order', filters.sortOrder);
+      if (filters.limit) params.append('limit', filters.limit.toString());
+      if (filters.offset) params.append('offset', filters.offset.toString());
     }
 
     const queryString = params.toString();

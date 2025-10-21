@@ -374,7 +374,7 @@ const AboutPage: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-neutral-black mb-2">Телефон</h3>
                   <p className="text-neutral-gray-600">
-                    +7 (495) 123-45-67
+                    +7 (937) 505-46-45
                     <br />
                     Бесплатный звонок по России: 8-800-555-01-23
                   </p>

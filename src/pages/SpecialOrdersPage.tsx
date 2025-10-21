@@ -76,7 +76,7 @@ const SpecialOrdersPage: React.FC = () => {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -90,27 +90,30 @@ const SpecialOrdersPage: React.FC = () => {
     if (value.trim().length > 0) {
       // Фильтруем бренды по введенному значению
       const filtered = popularBrands.filter((brand) =>
-        brand.toLowerCase().includes(value.toLowerCase())
+        brand.toLowerCase().includes(value.toLowerCase()),
       );
-      
+
       // Если точных совпадений нет, показываем похожие варианты
       if (filtered.length === 0) {
         // Используем алгоритм схожести для поиска похожих брендов
         const similar = popularBrands
           .map((brand) => ({
             brand,
-            similarity: calculateSimilarity(value.toLowerCase(), brand.toLowerCase()),
+            similarity: calculateSimilarity(
+              value.toLowerCase(),
+              brand.toLowerCase(),
+            ),
           }))
           .filter((item) => item.similarity > 0.3) // Порог схожести
           .sort((a, b) => b.similarity - a.similarity)
           .slice(0, 5) // Топ 5 похожих
           .map((item) => item.brand);
-        
+
         setBrandSuggestions(similar);
       } else {
         setBrandSuggestions(filtered);
       }
-      
+
       setShowBrandSuggestions(true);
     } else {
       setBrandSuggestions([]);
@@ -150,30 +153,37 @@ const SpecialOrdersPage: React.FC = () => {
   const formatPhoneNumber = (value: string) => {
     // Удаляем все нецифровые символы
     const digits = value.replace(/\D/g, "");
-    
+
     // Если начинается с 8, заменяем на 7
-    const normalizedDigits = digits.startsWith("8") ? "7" + digits.slice(1) : digits;
-    
+    const normalizedDigits = digits.startsWith("8")
+      ? "7" + digits.slice(1)
+      : digits;
+
     // Форматируем номер
     if (normalizedDigits.length === 0) return "";
     if (normalizedDigits.length <= 1) return `+${normalizedDigits}`;
-    if (normalizedDigits.length <= 4) return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1)}`;
-    if (normalizedDigits.length <= 7) return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4)}`;
-    if (normalizedDigits.length <= 9) return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4, 7)}-${normalizedDigits.slice(7)}`;
+    if (normalizedDigits.length <= 4)
+      return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1)}`;
+    if (normalizedDigits.length <= 7)
+      return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4)}`;
+    if (normalizedDigits.length <= 9)
+      return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4, 7)}-${normalizedDigits.slice(7)}`;
     return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4, 7)}-${normalizedDigits.slice(7, 9)}-${normalizedDigits.slice(9, 11)}`;
   };
 
   // Валидация российского номера телефона
   const validatePhoneNumber = (value: string): boolean => {
     const digits = value.replace(/\D/g, "");
-    const normalizedDigits = digits.startsWith("8") ? "7" + digits.slice(1) : digits;
-    
+    const normalizedDigits = digits.startsWith("8")
+      ? "7" + digits.slice(1)
+      : digits;
+
     // Проверяем, что номер начинается с 7 и содержит 11 цифр
     if (normalizedDigits.length !== 11 || !normalizedDigits.startsWith("7")) {
       setPhoneError("Введите корректный номер телефона");
       return false;
     }
-    
+
     setPhoneError("");
     return true;
   };
@@ -181,7 +191,7 @@ const SpecialOrdersPage: React.FC = () => {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setFormData((prev: typeof formData) => ({ ...prev, phone: formatted }));
-    
+
     // Валидация при вводе (только если введено достаточно символов)
     const digits = formatted.replace(/\D/g, "");
     if (digits.length >= 11) {
@@ -234,7 +244,7 @@ const SpecialOrdersPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Валидация телефона перед отправкой
     if (!validatePhoneNumber(formData.phone)) {
       showToast({
@@ -245,7 +255,7 @@ const SpecialOrdersPage: React.FC = () => {
       });
       return;
     }
-    
+
     setIsSubmitting(true);
     setSubmitStatus("idle");
 
@@ -516,10 +526,8 @@ const SpecialOrdersPage: React.FC = () => {
       </section>
 
       {/* Process Section */}
-      
 
       {/* Success Stories */}
-      
 
       {/* Order Form */}
       <section className="py-20">
@@ -568,7 +576,7 @@ const SpecialOrdersPage: React.FC = () => {
                           ? "border-red-500 focus:ring-red-500"
                           : "border-neutral-gray-300 focus:ring-brand-primary"
                       }`}
-                      placeholder="+7 (999) 123-45-67"
+                      placeholder="+7 (937) 505-46-45"
                       maxLength={18}
                     />
                     {phoneError && (
@@ -612,7 +620,7 @@ const SpecialOrdersPage: React.FC = () => {
                         placeholder="Начните вводить название бренда..."
                         autoComplete="off"
                       />
-                      
+
                       {/* Подсказки брендов */}
                       {showBrandSuggestions && brandSuggestions.length > 0 && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -626,7 +634,8 @@ const SpecialOrdersPage: React.FC = () => {
                                 <span className="font-medium text-neutral-black">
                                   {brand}
                                 </span>
-                                {formData.brand.toLowerCase() === brand.toLowerCase() && (
+                                {formData.brand.toLowerCase() ===
+                                  brand.toLowerCase() && (
                                   <Check className="w-4 h-4 text-brand-primary" />
                                 )}
                               </div>
@@ -634,7 +643,7 @@ const SpecialOrdersPage: React.FC = () => {
                           ))}
                         </div>
                       )}
-                      
+
                       <p className="text-neutral-gray-500 text-xs mt-1">
                         Выберите из списка или введите свой вариант
                       </p>
@@ -916,7 +925,7 @@ const SpecialOrdersPage: React.FC = () => {
                 Телефон горячей линии
               </h3>
               <p className="text-brand-primary text-2xl font-bold mb-2">
-                +7 (495) 123-45-67
+                +7 (937) 505-46-45
               </p>
               <p className="text-neutral-gray-600 text-sm">
                 Ежедневно с 10:00 до 22:00

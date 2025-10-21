@@ -21,7 +21,7 @@ const ContactPage: React.FC = () => {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -41,9 +41,9 @@ const ContactPage: React.FC = () => {
     {
       icon: Phone,
       title: "Телефон",
-      primary: "+7 (495) 123-45-67",
+      primary: "+7 (937) 505-46-45",
       secondary: "8-800-555-01-23 (бесплатно)",
-      description: "Звоните с 9:00 до 21:00",
+      description: "Звоните с 10:00 до 21:00",
     },
     {
       icon: Mail,

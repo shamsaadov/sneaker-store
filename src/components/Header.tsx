@@ -60,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
             <Link to="/" className="hover:opacity-80 transition-opacity">
               {/* Desktop logo */}
               <img
-                src="/assets/logo.png"
+                src="/assets/logo.svg"
                 alt="Steep step logo"
                 className="hidden md:block h-12 w-auto"
               />

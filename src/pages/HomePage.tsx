@@ -42,7 +42,9 @@ const HomePage: React.FC = () => {
   // Карусель фона hero (из public/assets/pictures)
   const heroBgImages = [
     "/assets/pictures/IMG_2369.PNG",
-    "/assets/pictures/IMG_2370.PNG",
+    "/assets/pictures/imgcross.png",
+    "/assets/pictures/twhoocross.png",
+
   ];
 
   const [bgIndex, setBgIndex] = useState(0);

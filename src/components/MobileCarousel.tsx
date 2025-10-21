@@ -13,7 +13,7 @@ const MobileCarousel: React.FC<MobileCarouselProps> = ({ items }) => {
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex will-change-transform">
           {items.map((node, idx) => (
-            <div key={idx} className="min-w-0 flex-[0_0_100%] px-3 py-2 flex justify-center">
+            <div key={idx} className="min-w-0 flex-[0_0_85%] px-3 py-2 flex justify-start">
               <div className="mc-slide-inner w-full max-w-[560px]">{node}</div>
             </div>
           ))}

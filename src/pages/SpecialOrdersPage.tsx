@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import apiService from "../utils/api";
 import { showToast } from "../components/ToastContainer";
+import MobileCarousel from "../components/MobileCarousel";
 
 const SpecialOrdersPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,6 +35,43 @@ const SpecialOrdersPage: React.FC = () => {
 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [filePreviewUrls, setFilePreviewUrls] = useState<string[]>([]);
+  const [phoneError, setPhoneError] = useState<string>("");
+  const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
+  const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+
+  // Список популярных брендов кроссовок
+  const popularBrands = [
+    "Nike",
+    "Adidas",
+    "Jordan",
+    "New Balance",
+    "Puma",
+    "Reebok",
+    "Converse",
+    "Vans",
+    "Asics",
+    "Saucony",
+    "Under Armour",
+    "Yeezy",
+    "Off-White",
+    "Balenciaga",
+    "Gucci",
+    "Louis Vuitton",
+    "Alexander McQueen",
+    "Rick Owens",
+    "Salomon",
+    "Hoka One One",
+    "On Running",
+    "Brooks",
+    "Mizuno",
+    "Diadora",
+    "Fila",
+    "Kappa",
+    "Champion",
+    "DC Shoes",
+    "Lacoste",
+    "Tommy Hilfiger",
+  ];
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -42,6 +80,115 @@ const SpecialOrdersPage: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Обработка ввода бренда с автодополнением
+  const handleBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData((prev: typeof formData) => ({ ...prev, brand: value }));
+
+    if (value.trim().length > 0) {
+      // Фильтруем бренды по введенному значению
+      const filtered = popularBrands.filter((brand) =>
+        brand.toLowerCase().includes(value.toLowerCase())
+      );
+      
+      // Если точных совпадений нет, показываем похожие варианты
+      if (filtered.length === 0) {
+        // Используем алгоритм схожести для поиска похожих брендов
+        const similar = popularBrands
+          .map((brand) => ({
+            brand,
+            similarity: calculateSimilarity(value.toLowerCase(), brand.toLowerCase()),
+          }))
+          .filter((item) => item.similarity > 0.3) // Порог схожести
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, 5) // Топ 5 похожих
+          .map((item) => item.brand);
+        
+        setBrandSuggestions(similar);
+      } else {
+        setBrandSuggestions(filtered);
+      }
+      
+      setShowBrandSuggestions(true);
+    } else {
+      setBrandSuggestions([]);
+      setShowBrandSuggestions(false);
+    }
+  };
+
+  // Простой алгоритм вычисления схожести строк (Dice's coefficient)
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    if (str1 === str2) return 1;
+    if (str1.length < 2 || str2.length < 2) return 0;
+
+    const bigrams1 = new Set<string>();
+    for (let i = 0; i < str1.length - 1; i++) {
+      bigrams1.add(str1.substring(i, i + 2));
+    }
+
+    let intersectionSize = 0;
+    for (let i = 0; i < str2.length - 1; i++) {
+      const bigram = str2.substring(i, i + 2);
+      if (bigrams1.has(bigram)) {
+        intersectionSize++;
+      }
+    }
+
+    return (2.0 * intersectionSize) / (str1.length + str2.length - 2);
+  };
+
+  // Выбор бренда из подсказок
+  const selectBrand = (brand: string) => {
+    setFormData((prev: typeof formData) => ({ ...prev, brand }));
+    setBrandSuggestions([]);
+    setShowBrandSuggestions(false);
+  };
+
+  // Форматирование номера телефона
+  const formatPhoneNumber = (value: string) => {
+    // Удаляем все нецифровые символы
+    const digits = value.replace(/\D/g, "");
+    
+    // Если начинается с 8, заменяем на 7
+    const normalizedDigits = digits.startsWith("8") ? "7" + digits.slice(1) : digits;
+    
+    // Форматируем номер
+    if (normalizedDigits.length === 0) return "";
+    if (normalizedDigits.length <= 1) return `+${normalizedDigits}`;
+    if (normalizedDigits.length <= 4) return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1)}`;
+    if (normalizedDigits.length <= 7) return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4)}`;
+    if (normalizedDigits.length <= 9) return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4, 7)}-${normalizedDigits.slice(7)}`;
+    return `+${normalizedDigits.slice(0, 1)} (${normalizedDigits.slice(1, 4)}) ${normalizedDigits.slice(4, 7)}-${normalizedDigits.slice(7, 9)}-${normalizedDigits.slice(9, 11)}`;
+  };
+
+  // Валидация российского номера телефона
+  const validatePhoneNumber = (value: string): boolean => {
+    const digits = value.replace(/\D/g, "");
+    const normalizedDigits = digits.startsWith("8") ? "7" + digits.slice(1) : digits;
+    
+    // Проверяем, что номер начинается с 7 и содержит 11 цифр
+    if (normalizedDigits.length !== 11 || !normalizedDigits.startsWith("7")) {
+      setPhoneError("Введите корректный номер телефона");
+      return false;
+    }
+    
+    setPhoneError("");
+    return true;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData((prev: typeof formData) => ({ ...prev, phone: formatted }));
+    
+    // Валидация при вводе (только если введено достаточно символов)
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length >= 11) {
+      validatePhoneNumber(formatted);
+    } else if (phoneError) {
+      setPhoneError("");
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +234,18 @@ const SpecialOrdersPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Валидация телефона перед отправкой
+    if (!validatePhoneNumber(formData.phone)) {
+      showToast({
+        type: "error",
+        title: "Ошибка валидации",
+        message: "Пожалуйста, введите корректный российский номер телефона",
+        duration: 4000,
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     setSubmitStatus("idle");
 
@@ -288,8 +447,42 @@ const SpecialOrdersPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-neutral-gray-50">
+      {/* Features Section - Mobile Carousel */}
+      <section className="py-10 bg-neutral-gray-50 lg:hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-neutral-black mb-2">
+              Почему выбирают наш сервис спецзаказов?
+            </h2>
+            <p className="text-base text-neutral-gray-600 max-w-2xl mx-auto">
+              Профессиональный поиск эксклюзивных кроссовок с гарантией
+              подлинности
+            </p>
+          </div>
+
+          <MobileCarousel
+            items={features.map((feature, index) => (
+              <div
+                key={index}
+                className="bg-neutral-white p-6 rounded-2xl shadow-lg text-center"
+              >
+                <div className="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <feature.icon className="w-8 h-8 text-brand-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-neutral-black mb-3">
+                  {feature.title}
+                </h3>
+                <p className="text-neutral-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          />
+        </div>
+      </section>
+
+      {/* Features Section - Desktop Grid */}
+      <section className="hidden lg:block py-20 bg-neutral-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-neutral-black mb-4">
@@ -323,95 +516,10 @@ const SpecialOrdersPage: React.FC = () => {
       </section>
 
       {/* Process Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-neutral-black mb-4">
-              Как работает спецзаказ?
-            </h2>
-            <p className="text-xl text-neutral-gray-600">
-              Простой и прозрачный процесс от заявки до получения
-            </p>
-          </div>
-
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-brand-primary/20 transform -translate-y-1/2" />
-
-            <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-8">
-              {processSteps.map((step, index) => (
-                <div key={index} className="relative text-center">
-                  {/* Step Circle */}
-                  <div className="relative z-10 w-16 h-16 bg-brand-primary rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4">
-                    {step.number}
-                  </div>
-
-                  <h3 className="text-xl font-bold text-neutral-black mb-3">
-                    {step.title}
-                  </h3>
-                  <p className="text-neutral-gray-600 text-sm leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Success Stories */}
-      <section className="py-20 bg-neutral-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-neutral-black mb-4">
-              Истории успеха
-            </h2>
-            <p className="text-xl text-neutral-gray-600">
-              Реальные заказы, которые мы выполнили для наших клиентов
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {successStories.map((story, index) => (
-              <div
-                key={index}
-                className="bg-neutral-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-brand-primary font-bold text-2xl">
-                    {story.price}
-                  </span>
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    {story.time}
-                  </span>
-                </div>
-
-                <h3 className="font-bold text-neutral-black mb-3 text-lg">
-                  {story.model}
-                </h3>
-
-                <p className="text-neutral-gray-600 mb-4 italic">
-                  "{story.story}"
-                </p>
-
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary font-bold mr-3">
-                    {story.customer.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-neutral-black">
-                      {story.customer}
-                    </div>
-                    <div className="text-sm text-neutral-gray-500">
-                      Покупатель
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* Order Form */}
       <section className="py-20">
@@ -453,11 +561,24 @@ const SpecialOrdersPage: React.FC = () => {
                       type="tel"
                       name="phone"
                       value={formData.phone}
-                      onChange={handleInputChange}
+                      onChange={handlePhoneChange}
                       required
-                      className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
+                        phoneError
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-neutral-gray-300 focus:ring-brand-primary"
+                      }`}
                       placeholder="+7 (999) 123-45-67"
+                      maxLength={18}
                     />
+                    {phoneError && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <span className="mr-1">⚠</span> {phoneError}
+                      </p>
+                    )}
+                    <p className="text-neutral-gray-500 text-xs mt-1">
+                      Формат: +7 (XXX) XXX-XX-XX
+                    </p>
                   </div>
                 </div>
 
@@ -468,7 +589,7 @@ const SpecialOrdersPage: React.FC = () => {
                   </h3>
 
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
+                    <div className="relative">
                       <label className="block text-sm font-medium text-neutral-black mb-2">
                         Бренд *
                       </label>
@@ -476,11 +597,47 @@ const SpecialOrdersPage: React.FC = () => {
                         type="text"
                         name="brand"
                         value={formData.brand}
-                        onChange={handleInputChange}
+                        onChange={handleBrandChange}
+                        onFocus={() => {
+                          if (formData.brand.trim().length > 0) {
+                            setShowBrandSuggestions(true);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Задержка чтобы клик по подсказке успел сработать
+                          setTimeout(() => setShowBrandSuggestions(false), 200);
+                        }}
                         required
-                        className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        placeholder="Nike, Adidas, Jordan..."
+                        className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-colors"
+                        placeholder="Начните вводить название бренда..."
+                        autoComplete="off"
                       />
+                      
+                      {/* Подсказки брендов */}
+                      {showBrandSuggestions && brandSuggestions.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {brandSuggestions.map((brand, index) => (
+                            <div
+                              key={index}
+                              onClick={() => selectBrand(brand)}
+                              className="px-4 py-3 hover:bg-brand-primary/10 cursor-pointer transition-colors border-b border-neutral-gray-100 last:border-b-0"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-neutral-black">
+                                  {brand}
+                                </span>
+                                {formData.brand.toLowerCase() === brand.toLowerCase() && (
+                                  <Check className="w-4 h-4 text-brand-primary" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <p className="text-neutral-gray-500 text-xs mt-1">
+                        Выберите из списка или введите свой вариант
+                      </p>
                     </div>
 
                     <div>

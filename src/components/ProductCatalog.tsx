@@ -279,6 +279,30 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
             expandedSections={expandedFilterSections}
             onExpandedSectionsChange={setExpandedFilterSections}
           />
+          
+          {/* Mobile Search - Below Filters */}
+          <form 
+            onSubmit={(e: React.FormEvent) => {
+              e.preventDefault();
+              onSearchChange(localSearchQuery);
+            }}
+            className="relative lg:hidden mt-4"
+          >
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Поиск кроссовок..."
+              value={localSearchQuery}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-20 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm"
+            />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-brand-primary text-white px-2.5 rounded hover:bg-brand-dark transition-colors text-[11px] font-medium !h-6 !min-h-0 flex items-center justify-center"
+            >
+              Найти
+            </button>
+          </form>
         </div>
 
         {/* Main Content */}
@@ -294,13 +318,13 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
               {/* Spacer */}
               <div className="flex-1"></div>
 
-              {/* Compact Search Input */}
+              {/* Desktop Search Input - Hidden on Mobile */}
               <form 
                 onSubmit={(e: React.FormEvent) => {
                   e.preventDefault();
                   onSearchChange(localSearchQuery);
                 }}
-                className="relative w-80"
+                className="relative w-80 hidden lg:block"
               >
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -318,8 +342,8 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
                 </button>
               </form>
 
-              {/* View Mode Toggle */}
-              <div className="flex items-center space-x-2 bg-neutral-gray-100 rounded-lg p-1">
+              {/* View Mode Toggle - Hidden on Mobile */}
+              <div className="hidden lg:flex items-center space-x-2 bg-neutral-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded transition-colors ${

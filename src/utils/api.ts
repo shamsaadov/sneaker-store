@@ -71,7 +71,7 @@ class ApiService {
     if (filters) {
       if (filters.brands?.length) params.append('brands', filters.brands.join(','));
       if (filters.sizes?.length) params.append('sizes', filters.sizes.join(','));
-      if (filters.priceRange) {
+      if (filters.priceRange && filters.priceRange[0] !== undefined && filters.priceRange[1] !== undefined) {
         params.append('min_price', filters.priceRange[0].toString());
         params.append('max_price', filters.priceRange[1].toString());
       }

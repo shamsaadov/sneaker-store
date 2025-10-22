@@ -14,8 +14,7 @@ interface ProductCatalogProps {
 const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchChange }) => {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -64,24 +63,9 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
     sortOrder: 'asc',
   });
 
-  // Load products from API
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        setLoading(true);
-        const apiService = (await import('../utils/api')).default;
-        const data = await apiService.getProducts();
-        setProducts(data);
-      } catch (error) {
-        console.error('Error loading products:', error);
-        // Fall back to empty array on error
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
+  // Мемоизированный callback для изменения фильтров
+  const handleFiltersChange = useCallback((newFilters: FilterOptions) => {
+    setFilters(newFilters);
   }, []);
 
   // Load filters data
@@ -252,7 +236,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
     setSelectedProduct(null);
   };
 
-  if (loading) {
+  if (productsLoading && filteredProducts.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -271,7 +255,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
         <div className="lg:w-64 flex-shrink-0">
           <ProductFilters
             filters={filters}
-            onFiltersChange={setFilters}
+            onFiltersChange={handleFiltersChange}
             availableBrands={availableBrands}
             priceRange={priceRange}
             isOpen={isFiltersOpen}
@@ -421,7 +405,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
             <div className={
               viewMode === 'grid'
                 ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
-                : 'space-y-4'
+                : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
             }>
               {filteredProducts.map((product) => (
                 <ProductCard

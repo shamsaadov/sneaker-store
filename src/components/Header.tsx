@@ -18,7 +18,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
   const navLinks = [
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
-    { name: "Спецзаказы", path: "/special-orders-info" },
+    { name: "Спецзаказы", path: "/special-orders" },
     // { name: "О нас", path: "/about" },
     // { name: "Контакты", path: "/contact" },
   ];

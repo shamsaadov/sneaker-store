@@ -96,8 +96,8 @@ class Product {
 
     // Size filter (using JSONB operators for PostgreSQL)
     if (filters.sizes && filters.sizes.length > 0) {
-      const sizeConditions = filters.sizes.map(() => `p.sizes ? $${params.length + 1}`);
-      sql += ` AND (${sizeConditions.join(' OR ')})`;
+      // Use ?| operator to check if any of the sizes exist in the array
+      sql += ` AND p.sizes ?| array[${filters.sizes.map((_, index) => `$${params.length + index + 1}`).join(',')} ]`;
       filters.sizes.forEach(size => {
         params.push(String(size));
       });

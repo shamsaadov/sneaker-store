@@ -710,25 +710,7 @@ const SpecialOrdersPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-black mb-2">
-                      Срочность заказа
-                    </label>
-                    <select
-                      name="urgency"
-                      value={formData.urgency}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                    >
-                      <option value="normal">Обычная (7-14 дней)</option>
-                      <option value="urgent">
-                        Срочная (3-7 дней) +20% к стоимости
-                      </option>
-                      <option value="emergency">
-                        Экстренная (1-3 дня) +50% к стоимости
-                      </option>
-                    </select>
-                  </div>
+                  
                 </div>
 
                 {/* Images Upload */}

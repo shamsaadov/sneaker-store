@@ -361,26 +361,29 @@ const ProductDetailPage: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
                 Размер
               </h3>
-              <div className="grid grid-cols-6 gap-2">
-                {sizeOptions.map((option) => (
-                  <button
-                    key={option.size}
-                    onClick={() =>
-                      option.available && setSelectedSize(option.size)
-                    }
-                    disabled={!option.available}
-                    className={`py-2 px-3 rounded-lg border-2 flex items-center justify-center font-semibold text-sm transition-all ${
-                      selectedSize === option.size
-                        ? "border-brand-primary bg-brand-primary text-white"
-                        : option.available
-                          ? "border-gray-200 hover:border-brand-primary"
-                          : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    {option.size}
-                  </button>
-                ))}
-              </div>
+             <select
+  value={selectedSize || ""}
+  onChange={(e) => setSelectedSize(e.target.value || null)}
+  className="w-full p-3 pr-10 border-2 border-gray-200 rounded-lg focus:border-brand-primary focus:outline-none transition-colors appearance-none bg-right bg-no-repeat"
+  style={{
+    backgroundImage:
+      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23111' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+    backgroundPosition: "calc(100% - 12px) center",
+    backgroundSize: "16px",
+  }}
+>
+  <option value="">Выберите размер</option>
+  {sizeOptions.map((option) => (
+    <option
+      key={option.size}
+      value={option.available ? option.size : ""}
+      disabled={!option.available}
+      className={option.available ? "" : "text-gray-400"}
+    >
+      {option.size} {!option.available ? "(Нет в наличии)" : ""}
+    </option>
+  ))}
+</select>
               <p className="text-sm text-gray-600 mt-2">
                 {selectedSize
                   ? `Выбран размер: ${selectedSize}`
@@ -429,77 +432,11 @@ const ProductDetailPage: React.FC = () => {
                 Добавить в корзину • {formatPrice(product.price * quantity)}
               </button>
 
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleWishlist}
-                  className={`flex-1 py-3 px-4 rounded-lg border-2 font-semibold transition-all ${
-                    isWishlisted
-                      ? "border-red-500 text-red-500 bg-red-50"
-                      : "border-gray-300 text-gray-600 hover:border-gray-400"
-                  }`}
-                >
-                  <Heart
-                    className={`w-5 h-5 inline mr-2 ${isWishlisted ? "fill-current" : ""}`}
-                  />
-                  {isWishlisted ? "В избранном" : "В избранное"}
-                </button>
-
-                <button className="px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 transition-colors">
-                  <Share2 className="w-5 h-5" />
-                </button>
-              </div>
+              
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-2 gap-4 pt-6 border-t">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Truck className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    Быстрая доставка
-                  </div>
-                  <div className="text-sm text-gray-600">1-3 дня по России</div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    Гарантия качества
-                  </div>
-                  <div className="text-sm text-gray-600">100% оригинал</div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <RotateCcw className="w-5 h-5 text-purple-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">Возврат</div>
-                  <div className="text-sm text-gray-600">
-                    14 дней на возврат
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    Поддержка 24/7
-                  </div>
-                  <div className="text-sm text-gray-600">Всегда на связи</div>
-                </div>
-              </div>
-            </div>
+           
           </div>
         </div>
 

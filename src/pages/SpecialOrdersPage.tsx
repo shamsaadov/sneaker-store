@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Search,
   Clock,
@@ -38,6 +38,15 @@ const SpecialOrdersPage: React.FC = () => {
   const [phoneError, setPhoneError] = useState<string>("");
   const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
   const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+  const [photoError, setPhotoError] = useState<string>("");
+
+  // Add refs for all required fields
+  const nameRef = useRef<HTMLDivElement>(null);
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<HTMLDivElement>(null);
+  const sizeRef = useRef<HTMLDivElement>(null);
+  const photoUploadRef = useRef<HTMLDivElement>(null);
 
   // Список популярных брендов кроссовок
   const popularBrands = [
@@ -207,6 +216,7 @@ const SpecialOrdersPage: React.FC = () => {
 
     if (imageFiles.length > 0) {
       setUploadedFiles((prev) => [...prev, ...imageFiles].slice(0, 5)); // Максимум 5 файлов
+      setPhotoError(""); // Clear photo error when files are uploaded
 
       // Создаем preview URL для каждого файла
       imageFiles.forEach((file) => {
@@ -245,43 +255,68 @@ const SpecialOrdersPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Валидация телефона перед отправкой
-    if (!validatePhoneNumber(formData.phone)) {
+    // Validate all required fields
+    let firstErrorField: React.RefObject<HTMLDivElement> | null = null;
+
+    const setErrorAndScroll = (
+      ref: React.RefObject<HTMLDivElement>,
+      message: string,
+    ) => {
       showToast({
         type: "error",
         title: "Ошибка валидации",
-        message: "Пожалуйста, введите корректный российский номер телефона",
+        message,
         duration: 4000,
+      });
+      firstErrorField = ref;
+    };
+
+    if (!formData.name.trim()) {
+      setErrorAndScroll(nameRef, "Пожалуйста, введите ваше имя");
+    } else if (!validatePhoneNumber(formData.phone)) {
+      setErrorAndScroll(
+        phoneRef,
+        "Пожалуйста, введите корректный номер телефона",
+      );
+    } else if (!formData.brand.trim()) {
+      setErrorAndScroll(brandRef, "Пожалуйста, введите бренд");
+    } else if (!formData.model.trim()) {
+      setErrorAndScroll(modelRef, "Пожалуйста, введите модель");
+    } else if (!formData.size.trim()) {
+      setErrorAndScroll(sizeRef, "Пожалуйста, введите размер");
+    } else if (uploadedFiles.length === 0) {
+      setPhotoError("Пожалуйста, загрузите хотя бы одно фото");
+      setErrorAndScroll(
+        photoUploadRef,
+        "Пожалуйста, загрузите хотя бы одно фото модели",
+      );
+    }
+
+    // Если есть ошибка — скроллим
+    if (firstErrorField?.current) {
+      firstErrorField.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
       });
       return;
     }
 
+    // ✅ Если ошибок нет — выполняем отправку
     setIsSubmitting(true);
     setSubmitStatus("idle");
+    setPhotoError("");
 
     try {
-      // Конвертируем загруженные файлы в Base64 для отправки
       const imageBase64Array = await convertFilesToBase64(uploadedFiles);
 
-      // Prepare data for API
       const orderData = {
-        name: formData.name,
-        phone: formData.phone,
-        brand: formData.brand,
-        model: formData.model,
-        size: formData.size,
-        color: formData.color,
-        budget: formData.budget,
-        urgency: formData.urgency,
-        description: formData.description,
+        ...formData,
         images: imageBase64Array,
       };
 
       await apiService.createSpecialOrder(orderData);
-
       setSubmitStatus("success");
 
-      // Show success toast
       showToast({
         type: "success",
         title: "Заявка отправлена!",
@@ -289,7 +324,6 @@ const SpecialOrdersPage: React.FC = () => {
         duration: 6000,
       });
 
-      // Reset form
       setFormData({
         name: "",
         phone: "",
@@ -301,20 +335,14 @@ const SpecialOrdersPage: React.FC = () => {
         urgency: "normal",
         description: "",
       });
-
-      // Очищаем загруженные файлы
       setUploadedFiles([]);
       setFilePreviewUrls([]);
 
-      // Hide success message
-      setTimeout(() => {
-        setSubmitStatus("idle");
-      }, 3000);
+      setTimeout(() => setSubmitStatus("idle"), 3000);
     } catch (error) {
-      console.error("Error submitting special order:", error);
+      console.error("Ошибка отправки:", error);
       setSubmitStatus("error");
 
-      // Show error toast
       showToast({
         type: "error",
         title: "Ошибка при отправке",
@@ -322,10 +350,7 @@ const SpecialOrdersPage: React.FC = () => {
         duration: 6000,
       });
 
-      // Hide error message
-      setTimeout(() => {
-        setSubmitStatus("idle");
-      }, 3000);
+      setTimeout(() => setSubmitStatus("idle"), 3000);
     } finally {
       setIsSubmitting(false);
     }
@@ -546,7 +571,7 @@ const SpecialOrdersPage: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Contact Info */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div>
+                  <div ref={nameRef}>
                     <label className="block text-sm font-medium text-neutral-black mb-2">
                       Ваше имя *
                     </label>
@@ -555,13 +580,12 @@ const SpecialOrdersPage: React.FC = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      required
                       className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                       placeholder="Иван Иванов"
                     />
                   </div>
 
-                  <div>
+                  <div ref={phoneRef}>
                     <label className="block text-sm font-medium text-neutral-black mb-2">
                       Телефон *
                     </label>
@@ -570,7 +594,6 @@ const SpecialOrdersPage: React.FC = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handlePhoneChange}
-                      required
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-colors ${
                         phoneError
                           ? "border-red-500 focus:ring-red-500"
@@ -597,7 +620,7 @@ const SpecialOrdersPage: React.FC = () => {
                   </h3>
 
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="relative">
+                    <div ref={brandRef} className="relative">
                       <label className="block text-sm font-medium text-neutral-black mb-2">
                         Бренд *
                       </label>
@@ -615,7 +638,6 @@ const SpecialOrdersPage: React.FC = () => {
                           // Задержка чтобы клик по подсказке успел сработать
                           setTimeout(() => setShowBrandSuggestions(false), 200);
                         }}
-                        required
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-colors"
                         placeholder="Начните вводить название бренда..."
                         autoComplete="off"
@@ -649,7 +671,7 @@ const SpecialOrdersPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div>
+                    <div ref={modelRef}>
                       <label className="block text-sm font-medium text-neutral-black mb-2">
                         Модель *
                       </label>
@@ -658,7 +680,6 @@ const SpecialOrdersPage: React.FC = () => {
                         name="model"
                         value={formData.model}
                         onChange={handleInputChange}
-                        required
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                         placeholder="Air Jordan 1, Yeezy 350..."
                       />
@@ -666,7 +687,7 @@ const SpecialOrdersPage: React.FC = () => {
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-6">
-                    <div>
+                    <div ref={sizeRef}>
                       <label className="block text-sm font-medium text-neutral-black mb-2">
                         Размер *
                       </label>
@@ -675,7 +696,6 @@ const SpecialOrdersPage: React.FC = () => {
                         name="size"
                         value={formData.size}
                         onChange={handleInputChange}
-                        required
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                         placeholder="42, 43, 44..."
                       />
@@ -710,13 +730,34 @@ const SpecialOrdersPage: React.FC = () => {
                     </div>
                   </div>
 
-                  
+                  {/*<div>*/}
+                  {/*  <label className="block text-sm font-medium text-neutral-black mb-2">*/}
+                  {/*    Срочность заказа*/}
+                  {/*  </label>*/}
+                  {/*  <select*/}
+                  {/*    name="urgency"*/}
+                  {/*    value={formData.urgency}*/}
+                  {/*    onChange={handleInputChange}*/}
+                  {/*    className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"*/}
+                  {/*  >*/}
+                  {/*    <option value="normal">Обычная (7-14 дней)</option>*/}
+                  {/*    <option value="urgent">*/}
+                  {/*      Срочная (3-7 дней) +20% к стоимости*/}
+                  {/*    </option>*/}
+                  {/*    <option value="emergency">*/}
+                  {/*      Экстренная (1-3 дня) +50% к стоимости*/}
+                  {/*    </option>*/}
+                  {/*  </select>*/}
+                  {/*</div>*/}
                 </div>
 
                 {/* Images Upload */}
-                <div className="border-t border-neutral-gray-200 pt-6">
+                <div
+                  ref={photoUploadRef}
+                  className="border-t border-neutral-gray-200 pt-6"
+                >
                   <h3 className="text-lg font-semibold text-neutral-black mb-4">
-                    Фотографии желаемой модели
+                    Фотографии желаемой модели *
                   </h3>
                   <p className="text-sm text-neutral-gray-600 mb-4">
                     Загрузите фото с вашего устройства для точного поиска
@@ -724,7 +765,13 @@ const SpecialOrdersPage: React.FC = () => {
                   </p>
 
                   {/* File Upload Area */}
-                  <div className="border-2 border-dashed border-neutral-gray-300 rounded-lg p-6 text-center hover:border-brand-primary transition-colors">
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-brand-primary transition-colors ${
+                      photoError
+                        ? "border-red-500 bg-red-50"
+                        : "border-neutral-gray-300"
+                    }`}
+                  >
                     <input
                       type="file"
                       id="file-upload"
@@ -754,6 +801,13 @@ const SpecialOrdersPage: React.FC = () => {
                       </p>
                     </label>
                   </div>
+
+                  {/* Photo Error Message */}
+                  {photoError && (
+                    <p className="text-red-500 text-sm mt-2 flex items-center">
+                      <span className="mr-1">⚠</span> {photoError}
+                    </p>
+                  )}
 
                   {/* Uploaded Files Preview */}
                   {filePreviewUrls.length > 0 && (

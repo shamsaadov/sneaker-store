@@ -363,7 +363,7 @@ const SpecialOrdersPage: React.FC = () => {
     e.preventDefault();
 
     // Validate all required fields
-    let firstErrorField: React.RefObject<HTMLDivElement> | null = null;
+    let firstErrorField: React.RefObject<HTMLDivElement> | null = null as any;
 
     const setErrorAndScroll = (
       ref: React.RefObject<HTMLDivElement>,
@@ -375,7 +375,9 @@ const SpecialOrdersPage: React.FC = () => {
         message,
         duration: 4000,
       });
-      firstErrorField = ref;
+      if (!firstErrorField) {
+        firstErrorField = ref;
+      }
     };
 
     if (!formData.name.trim()) {
@@ -400,7 +402,7 @@ const SpecialOrdersPage: React.FC = () => {
     }
 
     // Если есть ошибка — скроллим
-    if (firstErrorField?.current) {
+    if (firstErrorField && firstErrorField.current) {
       firstErrorField.current.scrollIntoView({
         behavior: "smooth",
         block: "center",

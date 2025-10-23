@@ -124,6 +124,30 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
         </button>
       </div>
     </div>
+
+    {/* Мобильное меню */}
+    {isMenuOpen && (
+      <div className="lg:hidden bg-neutral-white border-t border-gray-200">
+        <nav className="container mx-auto px-4 py-4">
+          <div className="flex flex-col space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={() => setIsMenuOpen(false)}
+                className={`transition-colors font-medium py-2 ${
+                  isActivePage(link.path)
+                    ? "text-brand-primary font-semibold"
+                    : "text-gray-500 hover:text-gray-400"
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      </div>
+    )}
   </div>
 </header>
   );

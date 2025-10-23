@@ -49,9 +49,6 @@ interface ProductFiltersProps {
     brands: boolean;
     sizes: boolean;
     price: boolean;
-    colors: boolean;
-    materials: boolean;
-    seasons: boolean;
     special: boolean;
   };
   onExpandedSectionsChange: (sections: {
@@ -61,9 +58,6 @@ interface ProductFiltersProps {
     brands: boolean;
     sizes: boolean;
     price: boolean;
-    colors: boolean;
-    materials: boolean;
-    seasons: boolean;
     special: boolean;
   }) => void;
 }
@@ -170,49 +164,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     []
   );
 
-  const colors = useMemo(
-    () => [
-      { value: "белый", label: "Белый", color: "#FFFFFF" },
-      { value: "черный", label: "Черный", color: "#000000" },
-      { value: "красный", label: "Красный", color: "#DC2626" },
-      { value: "синий", label: "Синий", color: "#2563EB" },
-      { value: "зеленый", label: "Зеленый", color: "#16A34A" },
-      { value: "желтый", label: "Желтый", color: "#EAB308" },
-      { value: "коричневый", label: "Коричневый", color: "#A16207" },
-      { value: "серый", label: "Серый", color: "#6B7280" },
-      { value: "розовый", label: "Розовый", color: "#EC4899" },
-      { value: "фиолетовый", label: "Фиолетовый", color: "#9333EA" },
-    ],
-    []
-  );
-
-  const materials = useMemo(
-    () => [
-      { value: "leather", label: "Кожа" },
-      { value: "cotton", label: "Хлопок" },
-      { value: "polyester", label: "Полиэстер" },
-      { value: "canvas", label: "Канвас" },
-      { value: "mesh", label: "Сетка" },
-      { value: "suede", label: "Замша" },
-      { value: "synthetic", label: "Синтетика" },
-      { value: "plastic", label: "Пластик" },
-      { value: "wood", label: "Дерево" },
-      { value: "fabric", label: "Ткань" },
-      { value: "metal", label: "Металл" },
-    ],
-    []
-  );
-
-  const seasons = useMemo(
-    () => [
-      { value: "spring", label: "Весна" },
-      { value: "summer", label: "Лето" },
-      { value: "autumn", label: "Осень" },
-      { value: "winter", label: "Зима" },
-      { value: "all-season", label: "Всесезонные" },
-    ],
-    []
-  );
 
   // Получаем доступные размеры согласно выбранным типам и полу
   const getAvailableSizes = useCallback(() => {
@@ -348,9 +299,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       local.sizes.length +
       local.productTypes.length +
       local.gender.length +
-      local.colors.length +
-      local.materials.length +
-      local.seasons.length +
       (local.hasDiscount ? 1 : 0) +
       (local.inStock ? 1 : 0)
     );
@@ -576,14 +524,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               </div>
             </div>
           </FilterSection>
-
-          {/* Colors */}
-          
-          {/* Materials */}
-          
-
-          {/* Seasons */}
-         
 
           {/* Price */}
           <FilterSection title="Цена" section="price" icon={null}>

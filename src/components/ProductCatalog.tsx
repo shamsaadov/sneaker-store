@@ -35,9 +35,6 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
     brands: false,
     sizes: false,
     price: false,
-    colors: false,
-    materials: false,
-    seasons: false,
     special: false,
   });
 
@@ -117,11 +114,10 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           brands: filters.brands.length > 0 ? filters.brands : undefined,
           sizes: filters.sizes.length > 0 ? filters.sizes : undefined,
           priceRange: filters.priceRange,
-          type: filters.productTypes.length > 0 ? filters.productTypes : undefined,
+          categories: filters.categories.length > 0 ? filters.categories : undefined,
+          productTypes: filters.productTypes.length > 0 ? filters.productTypes : undefined,
+          gender: filters.gender.length > 0 ? filters.gender : undefined,
           colors: filters.colors.length > 0 ? filters.colors : undefined,
-          materials: filters.materials.length > 0 ? filters.materials : undefined,
-          seasons: filters.seasons.length > 0 ? filters.seasons : undefined,
-          hasDiscount: filters.hasDiscount || undefined,
           inStock: filters.inStock || undefined,
           sortBy: filters.sortBy,
           sortOrder: filters.sortOrder,
@@ -171,11 +167,10 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
             brands: filters.brands.length > 0 ? filters.brands : undefined,
             sizes: filters.sizes.length > 0 ? filters.sizes : undefined,
             priceRange: filters.priceRange,
-            type: filters.productTypes.length > 0 ? filters.productTypes : undefined,
+            categories: filters.categories.length > 0 ? filters.categories : undefined,
+            productTypes: filters.productTypes.length > 0 ? filters.productTypes : undefined,
+            gender: filters.gender.length > 0 ? filters.gender : undefined,
             colors: filters.colors.length > 0 ? filters.colors : undefined,
-            materials: filters.materials.length > 0 ? filters.materials : undefined,
-            seasons: filters.seasons.length > 0 ? filters.seasons : undefined,
-            hasDiscount: filters.hasDiscount || undefined,
             inStock: filters.inStock || undefined,
             sortBy: filters.sortBy,
             sortOrder: filters.sortOrder,
@@ -395,6 +390,9 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
                     sortBy: 'name',
                     sortOrder: 'asc',
                   });
+                  // Очищаем поисковое поле
+                  setLocalSearchQuery('');
+                  onSearchChange('');
                 }}
                 className="text-brand-primary hover:text-brand-dark font-medium"
               >
@@ -402,19 +400,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
               </button>
             </div>
           ) : (
-            <div className={
-              viewMode === 'grid'
-                ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
-                : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
-            }>
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onClick={handleProductClick}
-                />
-              ))}
-            </div>
+            
           )}
 
           {/* Loading more indicator */}

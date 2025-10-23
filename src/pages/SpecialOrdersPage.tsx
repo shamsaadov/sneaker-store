@@ -38,6 +38,8 @@ const SpecialOrdersPage: React.FC = () => {
   const [phoneError, setPhoneError] = useState<string>("");
   const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
   const [showBrandSuggestions, setShowBrandSuggestions] = useState(false);
+  const [colorSuggestions, setColorSuggestions] = useState<string[]>([]);
+  const [showColorSuggestions, setShowColorSuggestions] = useState(false);
   const [photoError, setPhotoError] = useState<string>("");
 
   // Add refs for all required fields
@@ -82,6 +84,38 @@ const SpecialOrdersPage: React.FC = () => {
     "Tommy Hilfiger",
   ];
 
+  // Список популярных цветов кроссовок
+  const popularColors = [
+    "Белый",
+    "Черный",
+    "Серый",
+    "Красный",
+    "Синий",
+    "Зеленый",
+    "Желтый",
+    "Оранжевый",
+    "Розовый",
+    "Фиолетовый",
+    "Коричневый",
+    "Бежевый",
+    "Кремовый",
+    "Мятный",
+    "Турquoise",
+    "Бордовый",
+    "Темно-синий",
+    "Светло-серый",
+    "Темно-серый",
+    "Мультиколор",
+    "Металлик",
+    "Золотой",
+    "Серебряный",
+    "Медный",
+    "Хаки",
+    "Оливковый",
+    "Неоновый",
+    "Пастельный",
+  ];
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -89,6 +123,33 @@ const SpecialOrdersPage: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Обработка ввода бюджета - только цифры
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Разрешаем только цифры
+    const numericValue = value.replace(/[^0-9]/g, "");
+    setFormData((prev) => ({ ...prev, budget: numericValue }));
+  };
+
+  // Обработка ввода размера - только цифры с автоматическими запятыми
+  const handleSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Разрешаем только цифры
+    const digitsOnly = value.replace(/[^0-9]/g, "");
+    
+    // Добавляем запятую после каждых двух цифр
+    let formattedValue = "";
+    for (let i = 0; i < digitsOnly.length; i += 2) {
+      const chunk = digitsOnly.slice(i, i + 2);
+      if (i > 0) {
+        formattedValue += ", ";
+      }
+      formattedValue += chunk;
+    }
+    
+    setFormData((prev) => ({ ...prev, size: formattedValue }));
   };
 
   // Обработка ввода бренда с автодополнением
@@ -156,6 +217,52 @@ const SpecialOrdersPage: React.FC = () => {
     setFormData((prev: typeof formData) => ({ ...prev, brand }));
     setBrandSuggestions([]);
     setShowBrandSuggestions(false);
+  };
+
+  // Обработка ввода цвета с автодополнением
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData((prev: typeof formData) => ({ ...prev, color: value }));
+
+    if (value.trim().length > 0) {
+      // Фильтруем цвета по введенному значению
+      const filtered = popularColors.filter((color) =>
+        color.toLowerCase().includes(value.toLowerCase()),
+      );
+
+      // Если точных совпадений нет, показываем похожие варианты
+      if (filtered.length === 0) {
+        // Используем алгоритм схожести для поиска похожих цветов
+        const similar = popularColors
+          .map((color) => ({
+            color,
+            similarity: calculateSimilarity(
+              value.toLowerCase(),
+              color.toLowerCase(),
+            ),
+          }))
+          .filter((item) => item.similarity > 0.3) // Порог схожести
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, 5) // Топ 5 похожих
+          .map((item) => item.color);
+
+        setColorSuggestions(similar);
+      } else {
+        setColorSuggestions(filtered);
+      }
+
+      setShowColorSuggestions(true);
+    } else {
+      setColorSuggestions([]);
+      setShowColorSuggestions(false);
+    }
+  };
+
+  // Выбор цвета из подсказок
+  const selectColor = (color: string) => {
+    setFormData((prev: typeof formData) => ({ ...prev, color }));
+    setColorSuggestions([]);
+    setShowColorSuggestions(false);
   };
 
   // Форматирование номера телефона
@@ -639,7 +746,7 @@ const SpecialOrdersPage: React.FC = () => {
                           setTimeout(() => setShowBrandSuggestions(false), 200);
                         }}
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-colors"
-                        placeholder="Начните вводить название бренда..."
+                        placeholder="Введите бренд"
                         autoComplete="off"
                       />
 
@@ -695,13 +802,13 @@ const SpecialOrdersPage: React.FC = () => {
                         type="text"
                         name="size"
                         value={formData.size}
-                        onChange={handleInputChange}
+                        onChange={handleSizeChange}
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        placeholder="42, 43, 44..."
+                        placeholder="42,43,44"
                       />
                     </div>
 
-                    <div>
+                    <div className="relative">
                       <label className="block text-sm font-medium text-neutral-black mb-2">
                         Цвет
                       </label>
@@ -709,10 +816,43 @@ const SpecialOrdersPage: React.FC = () => {
                         type="text"
                         name="color"
                         value={formData.color}
-                        onChange={handleInputChange}
+                        onChange={handleColorChange}
+                        onFocus={() => {
+                          if (formData.color.trim().length > 0) {
+                            setShowColorSuggestions(true);
+                          }
+                        }}
+                        onBlur={() => {
+                          // Небольшая задержка, чтобы пользователь мог кликнуть на подсказку
+                          setTimeout(() => setShowColorSuggestions(false), 200);
+                        }}
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        placeholder="Белый, черный..."
+                        placeholder="Начните вводить цвет..."
+                        autoComplete="off"
                       />
+
+                      {/* Подсказки цветов */}
+                      {showColorSuggestions && colorSuggestions.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {colorSuggestions.map((color, index) => (
+                            <div
+                              key={index}
+                              onClick={() => selectColor(color)}
+                              className="px-4 py-3 hover:bg-brand-primary/10 cursor-pointer transition-colors border-b border-neutral-gray-100 last:border-b-0"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium text-neutral-black">
+                                  {color}
+                                </span>
+                                {formData.color.toLowerCase() ===
+                                  color.toLowerCase() && (
+                                  <Check className="w-4 h-4 text-brand-primary" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -723,9 +863,9 @@ const SpecialOrdersPage: React.FC = () => {
                         type="text"
                         name="budget"
                         value={formData.budget}
-                        onChange={handleInputChange}
+                        onChange={handleBudgetChange}
                         className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                        placeholder="До 50,000 ₽"
+                        placeholder="Введите сумму"
                       />
                     </div>
                   </div>
@@ -873,7 +1013,7 @@ const SpecialOrdersPage: React.FC = () => {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    rows={4}
+                    rows={2}
                     className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent resize-none"
                     placeholder="Укажите дополнительные требования, предпочтения по году выпуска, состоянию (новые/б/у) и другие важные детали..."
                   />
@@ -961,7 +1101,7 @@ const SpecialOrdersPage: React.FC = () => {
                 Телефон горячей линии
               </h3>
               <p className="text-brand-primary text-2xl font-bold mb-2">
-                +7 (937) 505-46-45
+                <a href="tel:+79375054645" className="hover:underline">+7 (937) 505-46-45</a>
               </p>
               <p className="text-neutral-gray-600 text-sm">
                 Ежедневно с 10:00 до 22:00
@@ -974,7 +1114,7 @@ const SpecialOrdersPage: React.FC = () => {
                 Email для спецзаказов
               </h3>
               <p className="text-brand-primary text-xl font-bold mb-2">
-                special@steepstep.ru
+                <a href="mailto:special@steepstep.ru" className="hover:underline">special@steepstep.ru</a>
               </p>
               <p className="text-neutral-gray-600 text-sm">
                 Ответим в течение 1 часа

@@ -76,6 +76,12 @@ class ApiService {
         params.append('max_price', filters.priceRange[1].toString());
       }
       if (filters.categories?.length) params.append('categories', filters.categories.join(','));
+      // New filters aligned with backend API
+      if (filters.productTypes?.length) params.append('product_types', filters.productTypes.join(','));
+      if (filters.gender?.length) params.append('gender', filters.gender.join(','));
+      if (filters.colors?.length) params.append('colors', filters.colors.join(','));
+      if (filters.inStock !== undefined) params.append('in_stock', String(filters.inStock));
+      // Note: hasDiscount isn't supported by backend. Consider adding on server side if needed
       if (filters.sortBy) params.append('sort_by', filters.sortBy);
       if (filters.sortOrder) params.append('sort_order', filters.sortOrder);
       if (filters.limit) params.append('limit', filters.limit.toString());

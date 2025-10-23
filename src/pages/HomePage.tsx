@@ -572,7 +572,9 @@ const HomePage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-neutral-white mb-2">Телефон</h3>
-                  <p className="text-neutral-white">+7 (937) 505-46-45</p>
+                  <p className="text-neutral-white">
+                    <a href="tel:+79375054645" className="hover:underline">+7 (937) 505-46-45</a>
+                  </p>
                 </div>
               </div>
 
@@ -583,9 +585,9 @@ const HomePage: React.FC = () => {
                 <div>
                   <h3 className="font-bold text-neutral-white mb-2">Email</h3>
                   <p className="text-neutral-white">
-                    info@sneakerstore.ru
+                    <a href="mailto:info@sneakerstore.ru" className="hover:underline">info@sneakerstore.ru</a>
                     <br />
-                    support@sneakerstore.ru
+                    <a href="mailto:support@sneakerstore.ru" className="hover:underline">support@sneakerstore.ru</a>
                   </p>
                 </div>
               </div>

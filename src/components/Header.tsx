@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
   ];
   return (
     <header className="bg-neutral-white shadow-lg sticky top-0 z-50">
-  <div className="container mx-auto px-4 py-4">
+  <div className="container mx-auto md:p-4">
     <div className="flex items-center">
       
       {/* Левая часть: логотип */}
@@ -62,7 +62,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
           <img
             src="/assets/logo.svg"
             alt="Steep step logo"
-            className="hidden md:block h-12 w-auto"
+            className="hidden md:block h-10 w-auto"
           />
           <img
             src="/assets/shortLogo.svg"

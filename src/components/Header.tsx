@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
   ];
   return (
     <header className="bg-neutral-white shadow-lg sticky top-0 z-50">
-  <div className="container mx-auto md:p-4">
+  <div className="container mx-auto sm:p-4">
     <div className="flex items-center">
       
       {/* Левая часть: логотип */}

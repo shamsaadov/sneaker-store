@@ -1,9 +1,9 @@
-import type React from 'react';
-import { useState } from 'react';
-import { X, Heart, Star, Plus, Minus } from 'lucide-react';
-import type { Product } from '../types';
-import { useCart } from '../context/CartContext';
-import { showToast } from './ToastContainer';
+import type React from "react";
+import { useState } from "react";
+import { X, Heart, Star, Plus, Minus } from "lucide-react";
+import type { Product } from "../types";
+import { useCart } from "../context/CartContext";
+import { showToast } from "./ToastContainer";
 
 interface ProductModalProps {
   product: Product | null;
@@ -11,10 +11,16 @@ interface ProductModalProps {
   onClose: () => void;
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose }) => {
+const ProductModal: React.FC<ProductModalProps> = ({
+  product,
+  isOpen,
+  onClose,
+}) => {
   const { addToCart, getItemQuantityInCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string | number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | number | null>(
+    null
+  );
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
 
@@ -23,38 +29,38 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
   const handleAddToCart = () => {
     if (!selectedSize) {
       showToast({
-        type: 'warning',
-        title: 'Выберите размер',
-        message: 'Пожалуйста, выберите размер товара',
-        duration: 3000
+        type: "warning",
+        title: "Выберите размер",
+        message: "Пожалуйста, выберите размер товара",
+        duration: 3000,
       });
       return;
     }
 
     const result = addToCart(product, selectedSize, quantity);
-    
+
     if (result.success) {
       showToast({
-        type: 'success',
-        title: 'Добавлено в корзину',
+        type: "success",
+        title: "Добавлено в корзину",
         message: `${product.name} (размер ${selectedSize}) - ${quantity} шт.`,
-        duration: 3000
+        duration: 3000,
       });
       onClose();
     } else {
       showToast({
-        type: 'error',
-        title: 'Ошибка',
-        message: result.message || 'Не удалось добавить товар в корзину',
-        duration: 4000
+        type: "error",
+        title: "Ошибка",
+        message: result.message || "Не удалось добавить товар в корзину",
+        duration: 4000,
       });
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
+    return new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
     }).format(price);
   };
 
@@ -86,7 +92,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
               {/* Main Image */}
               <div className="mb-4">
                 <img
-                  src={product.images[selectedImage] || '/api/placeholder/500/500'}
+                  src={
+                    product.images[selectedImage] || "/api/placeholder/500/500"
+                  }
                   alt={product.name}
                   className="w-full h-96 object-cover rounded-lg"
                 />
@@ -101,8 +109,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                       onClick={() => setSelectedImage(index)}
                       className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
                         selectedImage === index
-                          ? 'border-brand-primary'
-                          : 'border-neutral-gray-300'
+                          ? "border-brand-primary"
+                          : "border-neutral-gray-300"
                       }`}
                     >
                       <img
@@ -128,30 +136,37 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                 </h1>
               </div>
 
-
-
               {/* Price */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <span className="text-3xl font-bold text-neutral-black">
                     {formatPrice(product.price)}
                   </span>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <>
-                      <span className="text-lg text-neutral-gray-500 line-through">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                      <span className="bg-red-500 text-neutral-white px-2 py-1 rounded text-sm font-semibold">
-                        -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                      </span>
-                    </>
-                  )}
+                  {product.originalPrice &&
+                    product.originalPrice > product.price && (
+                      <>
+                        <span className="text-lg text-neutral-gray-500 line-through">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                        <span className="bg-red-500 text-neutral-white px-2 py-1 rounded text-sm font-semibold">
+                          -
+                          {Math.round(
+                            ((product.originalPrice - product.price) /
+                              product.originalPrice) *
+                              100
+                          )}
+                          %
+                        </span>
+                      </>
+                    )}
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <h3 className="font-semibold text-neutral-black mb-2">Описание</h3>
+                <h3 className="font-semibold text-neutral-black mb-2">
+                  Описание
+                </h3>
                 <p className="text-neutral-gray-700 leading-relaxed">
                   {product.description}
                 </p>
@@ -160,7 +175,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
               {/* Size Selection */}
               <div>
                 <h3 className="font-semibold text-neutral-black mb-3">
-                  Размер {selectedSize && <span className="text-brand-primary">({selectedSize})</span>}
+                  Размер{" "}
+                  {selectedSize && (
+                    <span className="text-brand-primary">({selectedSize})</span>
+                  )}
                 </h3>
                 <div className="grid grid-cols-6 gap-2">
                   {product.sizes.map((size) => (
@@ -169,8 +187,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                       onClick={() => setSelectedSize(size)}
                       className={`px-4 py-3 border rounded-lg font-medium transition-colors ${
                         selectedSize === size
-                          ? 'border-brand-primary bg-brand-primary text-neutral-white'
-                          : 'border-neutral-gray-300 text-neutral-black hover:border-brand-primary'
+                          ? "border-brand-primary bg-brand-primary text-neutral-white"
+                          : "border-neutral-gray-300 text-neutral-black hover:border-brand-primary"
                       }`}
                     >
                       {size}
@@ -181,7 +199,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
               {/* Quantity */}
               <div>
-                <h3 className="font-semibold text-neutral-black mb-3">Количество</h3>
+                <h3 className="font-semibold text-neutral-black mb-3">
+                  Количество
+                </h3>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center border border-neutral-gray-300 rounded-lg">
                     <button
@@ -194,13 +214,21 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                     <span className="px-4 py-2 font-medium">{quantity}</span>
                     <button
                       onClick={() => {
-                        const inCart = selectedSize ? getItemQuantityInCart(product.id, selectedSize) : 0;
+                        const inCart = selectedSize
+                          ? getItemQuantityInCart(product.id, selectedSize)
+                          : 0;
                         const maxAvailable = product.stock - inCart;
                         if (quantity < maxAvailable) {
                           setQuantity(quantity + 1);
                         }
                       }}
-                      disabled={selectedSize ? quantity >= (product.stock - getItemQuantityInCart(product.id, selectedSize)) : quantity >= product.stock}
+                      disabled={
+                        selectedSize
+                          ? quantity >=
+                            product.stock -
+                              getItemQuantityInCart(product.id, selectedSize)
+                          : quantity >= product.stock
+                      }
                       className="p-2 hover:bg-neutral-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" />
@@ -210,15 +238,23 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   <div className="text-sm">
                     {product.stock > 0 ? (
                       <>
-                        <span className="text-neutral-gray-600">В наличии: {product.stock} шт.</span>
-                        {selectedSize && getItemQuantityInCart(product.id, selectedSize) > 0 && (
-                          <span className="block text-brand-primary">
-                            В корзине: {getItemQuantityInCart(product.id, selectedSize)} шт.
-                          </span>
-                        )}
+                        <span className="text-neutral-gray-600">
+                          В наличии: {product.stock} шт.
+                        </span>
+                        {selectedSize &&
+                          getItemQuantityInCart(product.id, selectedSize) >
+                            0 && (
+                            <span className="block text-brand-primary">
+                              В корзине:{" "}
+                              {getItemQuantityInCart(product.id, selectedSize)}{" "}
+                              шт.
+                            </span>
+                          )}
                       </>
                     ) : (
-                      <span className="text-red-500 font-medium">Нет в наличии</span>
+                      <span className="text-red-500 font-medium">
+                        Нет в наличии
+                      </span>
                     )}
                   </div>
                 </div>
@@ -232,25 +268,30 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   className="w-full bg-brand-primary text-neutral-white py-3 px-6 rounded-lg font-semibold hover:bg-brand-dark transition-colors disabled:bg-neutral-gray-300 disabled:cursor-not-allowed"
                 >
                   {product.stock === 0
-                    ? 'Нет в наличии'
+                    ? "Нет в наличии"
                     : !selectedSize
-                    ? 'Выберите размер'
-                    : 'Добавить в корзину'
-                  }
+                      ? "Выберите размер"
+                      : "Добавить в корзину"}
                 </button>
 
                 <button
                   onClick={() => setIsLiked(!isLiked)}
                   className="w-full flex items-center justify-center space-x-2 border border-neutral-gray-300 text-neutral-black py-3 px-6 rounded-lg font-semibold hover:border-brand-primary hover:text-brand-primary transition-colors"
                 >
-                  <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                  <span>{isLiked ? 'В избранном' : 'Добавить в избранное'}</span>
+                  <Heart
+                    className={`w-5 h-5 ${isLiked ? "fill-red-500 text-red-500" : ""}`}
+                  />
+                  <span>
+                    {isLiked ? "В избранном" : "Добавить в избранное"}
+                  </span>
                 </button>
               </div>
 
               {/* Product Info */}
               <div className="bg-neutral-gray-50 rounded-lg p-4 space-y-2">
-                <h3 className="font-semibold text-neutral-black">Информация о товаре</h3>
+                <h3 className="font-semibold text-neutral-black">
+                  Информация о товаре
+                </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-neutral-gray-600">Артикул:</span>
@@ -262,7 +303,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   </div>
                   <div>
                     <span className="text-neutral-gray-600">В наличии:</span>
-                    <span className="ml-2 font-medium">{product.stock} шт.</span>
+                    <span className="ml-2 font-medium">
+                      {product.stock} шт.
+                    </span>
                   </div>
                   <div>
                     <span className="text-neutral-gray-600">Рейтинг:</span>

@@ -8,19 +8,22 @@ interface CategoryFormProps {
   onClose: () => void;
   onSubmit: (categoryData: Partial<Category>) => void;
   category?: Category | null;
+  allCategories: Category[]; // Все существующие категории для выбора родителя
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  category
+  category,
+  allCategories
 }) => {
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     description: '',
-    image: ''
+    image: '',
+    parentId: '' as string | null
   });
 
   useEffect(() => {
@@ -29,21 +32,61 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         name: category.name || '',
         slug: category.slug || '',
         description: category.description || '',
-        image: category.image || ''
+        image: category.image || '',
+        parentId: category.parentId || null
       });
     } else {
       setFormData({
         name: '',
         slug: '',
         description: '',
-        image: ''
+        image: '',
+        parentId: null
       });
     }
   }, [category, isOpen]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Определяем уровень категории на основе родителя
+  const getCurrentLevel = () => {
+    if (!formData.parentId) return 0;
+    const parent = allCategories.find(cat => cat.id === formData.parentId);
+    return parent ? parent.level + 1 : 0;
+  };
+
+  // Получаем доступные категории для выбора родителя
+  const getAvailableParents = () => {
+    return allCategories.filter(cat => {
+      // Исключаем текущую категорию (при редактировании)
+      if (category && cat.id === category.id) return false;
+      
+      // Исключаем потомков текущей категории (при редактировании)
+      if (category && cat.parentId === category.id) return false;
+      
+      // Показываем только категории уровня 0 и 1 (не подкатегории)
+      // так как максимальная глубина 3 уровня
+      if (cat.level >= 2) return false;
+      
+      return true;
+    });
+  };
+
+  const getLevelLabel = (level: number) => {
+    switch (level) {
+      case 0:
+        return 'Корневая категория';
+      case 1:
+        return 'Категория';
+      case 2:
+        return 'Подкатегория';
+      default:
+        return 'Неизвестный уровень';
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const newValue = value === '' ? null : value;
+    setFormData(prev => ({ ...prev, [name]: newValue }));
 
     // Auto-generate slug from name
     if (name === 'name' && !category) {
@@ -88,6 +131,30 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Parent Category Selection */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-black mb-2">
+                Родительская категория
+              </label>
+              <select
+                name="parentId"
+                value={formData.parentId || ''}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+              >
+                <option value="">Без родителя (Корневая категория)</option>
+                {getAvailableParents().map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.level === 0 ? cat.name : `  └─ ${cat.name}`} ({getLevelLabel(cat.level)})
+                  </option>
+                ))}
+              </select>
+              <p className="text-sm text-neutral-gray-500 mt-1">
+                Текущий уровень: <span className="font-semibold">{getLevelLabel(getCurrentLevel())}</span>
+                {getCurrentLevel() === 2 && ' (максимальный уровень)'}
+              </p>
+            </div>
+
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-neutral-black mb-2">
@@ -100,7 +167,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-3 border border-neutral-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                placeholder="Мужские кроссовки"
+                placeholder="Например: Мужское, Одежда, Jordan"
               />
             </div>
 

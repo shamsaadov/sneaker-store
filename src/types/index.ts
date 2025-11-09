@@ -124,6 +124,11 @@ export interface Category {
   description?: string;
   image?: string;
   productType: ProductType; // Привязываем категорию к типу товара
+  parentId?: string | null; // ID родительской категории
+  parentName?: string | null; // Название родительской категории
+  level: number; // Уровень вложенности: 0 = корневая, 1 = категория, 2 = подкатегория
+  productCount?: number; // Количество товаров в категории
+  children?: Category[]; // Дочерние категории (для древовидной структуры)
   created_at: string;
   updated_at: string;
 }

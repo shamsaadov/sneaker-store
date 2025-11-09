@@ -231,9 +231,28 @@ const ProductForm: React.FC<ProductFormProps> = ({
     return config.availableSizes;
   };
 
-  // Получить все доступные категории (убираем фильтрацию по типу)
+  // Получить все доступные категории для товаров (только подкатегории уровня 2)
   const getAvailableCategories = () => {
-    return categories; // Все категории доступны для всех типов товаров
+    return categories.filter(cat => cat.level === 2); // Только подкатегории
+  };
+
+  // Получить полный путь категории для отображения (Root > Category > Subcategory)
+  const getCategoryFullPath = (category: Category): string => {
+    if (!category.parentId) return category.name;
+    
+    // Найти родительскую категорию
+    const parent = categories.find(cat => cat.id === category.parentId);
+    if (!parent) return category.name;
+    
+    // Найти корневую категорию (если родитель не корневой)
+    if (parent.parentId) {
+      const root = categories.find(cat => cat.id === parent.parentId);
+      if (root) {
+        return `${root.name} > ${parent.name} > ${category.name}`;
+      }
+    }
+    
+    return `${parent.name} > ${category.name}`;
   };
 
   // Получить читаемое название поля для валидации
@@ -1139,23 +1158,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   >
                     <option value="">
                       {getAvailableCategories().length === 0
-                        ? "Нет созданных категорий"
-                        : "Выберите категорию"}
+                        ? "Нет подкатегорий (создайте трехуровневую иерархию)"
+                        : "Выберите подкатегорию"}
                     </option>
                     {getAvailableCategories().map((category) => (
                       <option key={category.id} value={category.id}>
-                        {category.name}
+                        {getCategoryFullPath(category)}
                       </option>
                     ))}
                   </select>
                   {getAvailableCategories().length === 0 && (
                     <p className="text-xs text-red-500 mt-1">
-                      Нет созданных категорий. Создайте категории во вкладке
-                      "Категории".
+                      Нет подкатегорий. Создайте трёхуровневую иерархию категорий (Корневая → Категория → Подкатегория) во вкладке "Категории".
                     </p>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
-                    Категории используются для организации товаров в каталоге
+                    Товары должны быть привязаны к подкатегориям (3-й уровень иерархии)
                   </p>
                 </div>
               </div>

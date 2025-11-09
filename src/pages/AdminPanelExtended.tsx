@@ -819,97 +819,143 @@ const AdminPanelExtended: React.FC<AdminPanelExtendedProps> = ({
     </div>
   );
 
-  const renderCategoriesManagement = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-neutral-black">
-          Управление категориями
-        </h2>
-        <button
-          onClick={() => setIsCategoryFormOpen(true)}
-          className="bg-brand-primary text-neutral-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-dark transition-colors flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Добавить категорию</span>
-        </button>
-      </div>
+  // Вспомогательная функция для отображения категорий с иерархией
+  const renderCategoryRow = (category: Category, level: number = 0) => {
+    const indent = "  ".repeat(level);
+    const levelLabel = level === 0 ? "📁" : level === 1 ? "📂" : "📄";
 
-      {/* Таблица категорий */}
-      <div className="bg-neutral-white rounded-lg shadow-md overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-neutral-gray-50">
-            <tr>
-              <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
-                Категория
-              </th>
-              <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
-                Slug
-              </th>
-              <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
-                Товаров
-              </th>
-              <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
-                Действия
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category) => (
-              <tr
-                key={category.id}
-                className="border-b border-neutral-gray-200 hover:bg-neutral-gray-50"
-              >
-                <td className="py-4 px-6">
-                  <div className="flex items-center space-x-3">
-                    {category.image && (
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="w-12 h-12 object-cover rounded-lg"
-                      />
-                    )}
-                    <div>
-                      <div className="font-semibold text-neutral-black">
-                        {category.name}
-                      </div>
-                      <div className="text-sm text-neutral-gray-600">
-                        {category.description}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-6 text-neutral-gray-600 font-mono text-sm">
-                  {category.slug}
-                </td>
-                <td className="py-4 px-6 text-neutral-black font-medium">
-                  {products.filter((p) => p.category_id === category.id).length}
-                </td>
-                <td className="py-4 px-6">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => {
-                        setEditingCategory(category);
-                        setIsCategoryFormOpen(true);
-                      }}
-                      className="p-2 text-neutral-gray-600 hover:text-brand-primary rounded-lg hover:bg-brand-primary/10"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCategory(category.id)}
-                      className="p-2 text-neutral-gray-600 hover:text-red-500 rounded-lg hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
+    return (
+      <tr
+        key={category.id}
+        className="border-t border-neutral-gray-200 hover:bg-neutral-gray-50"
+      >
+        <td className="py-4 px-6">
+          <div className="flex items-center">
+            <span className="mr-2">{levelLabel}</span>
+            <span
+              style={{ marginLeft: `${level * 20}px` }}
+              className="font-medium"
+            >
+              {category.name}
+            </span>
+            {category.parentName && (
+              <span className="ml-2 text-xs text-neutral-gray-500">
+                (родитель: {category.parentName})
+              </span>
+            )}
+          </div>
+        </td>
+        <td className="py-4 px-6 text-neutral-gray-600">{category.slug}</td>
+        <td className="py-4 px-6">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            {category.productCount || 0}
+          </span>
+        </td>
+        <td className="py-4 px-6">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => {
+                setEditingCategory(category);
+                setIsCategoryFormOpen(true);
+              }}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Редактировать"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleDeleteCategory(category.id)}
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              title="Удалить"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  };
+
+  // Рекурсивная функция для отображения категорий с детьми
+  const renderCategoryWithChildren = (
+    category: Category,
+    level: number = 0
+  ): JSX.Element[] => {
+    const rows = [renderCategoryRow(category, level)];
+
+    // Найти дочерние категории
+    const children = categories.filter((cat) => cat.parentId === category.id);
+    children.forEach((child) => {
+      rows.push(...renderCategoryWithChildren(child, level + 1));
+    });
+
+    return rows;
+  };
+
+  const renderCategoriesManagement = () => {
+    // Получаем только корневые категории (level 0)
+    const rootCategories = categories.filter((cat) => cat.level === 0);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-neutral-black">
+              Управление категориями
+            </h2>
+            <p className="text-sm text-neutral-gray-600 mt-1">
+              Иерархическая структура: Корневая → Категория → Подкатегория
+            </p>
+          </div>
+          <button
+            onClick={() => setIsCategoryFormOpen(true)}
+            className="bg-brand-primary text-neutral-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-dark transition-colors flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Добавить категорию</span>
+          </button>
+        </div>
+
+        {/* Таблица категорий */}
+        <div className="bg-neutral-white rounded-lg shadow-md overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-neutral-gray-50">
+              <tr>
+                <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
+                  Категория (Иерархия)
+                </th>
+                <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
+                  Slug
+                </th>
+                <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
+                  Товаров
+                </th>
+                <th className="py-4 px-6 text-left text-sm font-semibold text-neutral-gray-700">
+                  Действия
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rootCategories.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="py-8 text-center text-neutral-gray-500"
+                  >
+                    Нет категорий. Добавьте первую категорию.
+                  </td>
+                </tr>
+              ) : (
+                rootCategories.map((category) =>
+                  renderCategoryWithChildren(category)
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderInventoryManagement = () => (
     <div className="space-y-6">
@@ -1170,6 +1216,7 @@ const AdminPanelExtended: React.FC<AdminPanelExtendedProps> = ({
         }}
         onSubmit={editingCategory ? handleEditCategory : handleAddCategory}
         category={editingCategory}
+        allCategories={categories}
       />
     </div>
   );

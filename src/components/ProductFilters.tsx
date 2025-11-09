@@ -111,7 +111,12 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       const sameCounts =
         prev.brands.length === filters.brands.length &&
         prev.sizes.length === filters.sizes.length &&
-        prev.productTypes.length === filters.productTypes.length;
+        prev.productTypes.length === filters.productTypes.length &&
+        prev.gender.length === filters.gender.length &&
+        prev.hasDiscount === filters.hasDiscount &&
+        prev.inStock === filters.inStock &&
+        prev.sortBy === filters.sortBy &&
+        prev.sortOrder === filters.sortOrder;
       if (samePrice && sameCounts) {
         return prev;
       }
@@ -287,11 +292,17 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     setLocal(DEFAULT_FILTERS(priceRange));
   }, [priceRange]);
 
-  // Применить: единственный вызов onFiltersChange
-  const applyFilters = useCallback(() => {
-    // передаём новый объект — родитель обновит фильтры в store/state
-    onFiltersChange({ ...local });
-  }, [local, onFiltersChange]);
+  // Автоматическое применение фильтров при изменении (как на Nike.com)
+  useEffect(() => {
+    // Debounce для оптимизации - применяем фильтры через 500ms после последнего изменения
+    // Увеличили время для уменьшения количества запросов
+    const timeoutId = setTimeout(() => {
+      onFiltersChange({ ...local });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [local]);
 
   const getActiveFiltersCount = useCallback(() => {
     return (
@@ -306,7 +317,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
   const hasActiveFilters = getActiveFiltersCount() > 0;
 
-  // Вспомогательный компонент секции
+  // Вспомогательный компонент секции (в стиле Nike)
   const FilterSection: React.FC<{
     title: string;
     section: keyof typeof expandedSections;
@@ -315,7 +326,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     badge?: number;
   }> = React.useCallback(
     ({ title, section, children, icon, badge }) => (
-      <div className="border-b border-neutral-gray-200 last:border-b-0">
+      <div className="border-b border-neutral-gray-200 last:border-b-0 pb-4">
         <button
           onClick={() =>
             onExpandedSectionsChange({
@@ -323,13 +334,13 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               [section]: !expandedSections[section],
             })
           }
-          className="flex items-center justify-between w-full text-left font-semibold text-neutral-black mb-4 hover:text-brand-primary transition-colors"
+          className="flex items-center justify-between w-full text-left py-2 hover:text-brand-primary transition-colors"
         >
           <div className="flex items-center space-x-2">
             {icon}
-            <span>{title}</span>
+            <span className="text-sm font-semibold text-neutral-black">{title}</span>
             {badge !== undefined && badge > 0 && (
-              <span className="bg-brand-primary text-white text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+              <span className="bg-neutral-gray-200 text-neutral-black text-xs px-1.5 py-0.5 rounded-full min-w-[18px] h-4 flex items-center justify-center font-medium">
                 {badge}
               </span>
             )}
@@ -340,7 +351,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             <ChevronDown className="w-4 h-4 text-neutral-gray-500" />
           )}
         </button>
-        {expandedSections[section] && <div className="space-y-3">{children}</div>}
+        {expandedSections[section] && <div className="pt-2 space-y-2">{children}</div>}
       </div>
     ),
     [expandedSections, onExpandedSectionsChange]
@@ -372,75 +383,50 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
       {/* Filters Panel */}
       <div
-        className={`${isOpen ? "block" : "hidden"} lg:block bg-white rounded-xl shadow-lg border border-neutral-gray-200 overflow-hidden`}
+        className={`${isOpen ? "block" : "hidden"} lg:block bg-white rounded-lg border border-neutral-gray-200 overflow-hidden`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-neutral-gray-200 bg-neutral-gray-50">
+        <div className="p-4 border-b border-neutral-gray-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-neutral-black flex items-center">
-              <Filter className="w-6 h-6 mr-3 text-brand-primary" />
+            <h3 className="text-lg font-semibold text-neutral-black">
               Фильтры
             </h3>
             <div className="flex items-center space-x-3">
-              
+              {hasActiveFilters && (
+                <button
+                  onClick={resetLocalFilters}
+                  className="text-sm text-brand-primary hover:text-brand-dark font-medium"
+                >
+                  Очистить
+                </button>
+              )}
               <button
                 onClick={onToggle}
-                className="lg:hidden p-2 hover:bg-neutral-gray-200 rounded-lg transition-colors"
+                className="lg:hidden p-1.5 hover:bg-neutral-gray-100 rounded transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-neutral-gray-600" />
               </button>
             </div>
           </div>
-          
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* Sort */}
-          <FilterSection title="Сортировка" section="sort" >
-            <div className="grid gap-2">
-              {[
-                { value: "name", label: "По названию А-Я", order: "asc" as const },
-                { value: "name", label: "По названию Я-А", order: "desc" as const },
-                { value: "price", label: "Сначала дешевые", order: "asc" as const },
-                { value: "price", label: "Сначала дорогие", order: "desc" as const },
-                { value: "newest", label: "Новинки первыми", order: "desc" as const },
-                { value: "popularity", label: "По популярности", order: "desc" as const },
-              ].map((option) => (
-                <label
-                  key={`${option.value}-${option.order}`}
-                  className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors"
-                >
-                  <input
-                    type="radio"
-                    name="sort"
-                    checked={local.sortBy === option.value && local.sortOrder === option.order}
-                    onChange={() => {
-                      setLocalKey("sortBy", option.value as any);
-                      setLocalKey("sortOrder", option.order);
-                    }}
-                    className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
-                  />
-                  <span className="text-sm text-neutral-black">{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </FilterSection>
+        <div className="p-4 space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto">
 
           {/* Product Type */}
           <FilterSection title="Тип товара" section="productType" icon={null} badge={local.productTypes.length}>
-            <div className="grid gap-2">
+            <div className="space-y-1.5">
               {Object.entries(PRODUCT_TYPE_CONFIGS).map(([key, config]) => (
                 <label
                   key={key}
-                  className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200"
+                  className="flex items-center py-2 px-1 hover:bg-neutral-gray-50 rounded cursor-pointer transition-colors group"
                 >
                   <input
                     type="checkbox"
                     checked={local.productTypes.includes(key as ProductType)}
                     onChange={() => handleProductTypeChange(key as ProductType)}
-                    className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
+                    className="mr-3 w-4 h-4 text-brand-primary focus:ring-brand-primary focus:ring-1 border-neutral-gray-300 rounded"
                   />
-                  <span className="text-sm font-medium text-neutral-black">{config.label}</span>
+                  <span className="text-sm text-neutral-black group-hover:text-brand-primary">{config.label}</span>
                 </label>
               ))}
             </div>
@@ -448,19 +434,19 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Gender */}
           <FilterSection title="Пол" section="gender" icon={null} badge={local.gender.length}>
-            <div className="grid gap-2">
+            <div className="space-y-1.5">
               {genderOptions.map((option) => (
                 <label
                   key={option.value}
-                  className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200"
+                  className="flex items-center py-2 px-1 hover:bg-neutral-gray-50 rounded cursor-pointer transition-colors group"
                 >
                   <input
                     type="checkbox"
                     checked={local.gender.includes(option.value as any)}
                     onChange={() => handleGenderChange(option.value)}
-                    className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
+                    className="mr-3 w-4 h-4 text-brand-primary focus:ring-brand-primary focus:ring-1 border-neutral-gray-300 rounded"
                   />
-                  <span className="text-sm font-medium text-neutral-black">{option.label}</span>
+                  <span className="text-sm text-neutral-black group-hover:text-brand-primary">{option.label}</span>
                 </label>
               ))}
             </div>
@@ -468,19 +454,19 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Brands */}
           <FilterSection title="Бренды" section="brands" badge={local.brands.length}>
-            <div className="max-h-48 overflow-y-auto space-y-2">
+            <div className="max-h-48 overflow-y-auto space-y-1.5">
               {availableBrands.map((brand) => (
                 <label
                   key={brand}
-                  className="flex items-center p-2 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors"
+                  className="flex items-center py-2 px-1 hover:bg-neutral-gray-50 rounded cursor-pointer transition-colors group"
                 >
                   <input
                     type="checkbox"
                     checked={local.brands.includes(brand)}
                     onChange={() => handleArrayToggle("brands", brand)}
-                    className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
+                    className="mr-3 w-4 h-4 text-brand-primary focus:ring-brand-primary focus:ring-1 border-neutral-gray-300 rounded"
                   />
-                  <span className="text-sm font-medium text-neutral-black">{brand}</span>
+                  <span className="text-sm text-neutral-black group-hover:text-brand-primary">{brand}</span>
                 </label>
               ))}
             </div>
@@ -513,9 +499,9 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                   <button
                     key={String(size)}
                     onClick={() => handleSizeChange(size)}
-                    className={`aspect-square flex items-center justify-center text-sm font-medium border-2 rounded-lg transition-all hover:scale-105 ${local.sizes.includes(size)
-                        ? "border-brand-primary bg-brand-primary text-white shadow-lg"
-                        : "border-neutral-gray-300 text-neutral-black hover:border-brand-primary"
+                    className={`aspect-square flex items-center justify-center text-sm font-medium border rounded transition-all ${local.sizes.includes(size)
+                        ? "border-neutral-black bg-neutral-black text-white"
+                        : "border-neutral-gray-300 text-neutral-black hover:border-neutral-black bg-white"
                       }`}
                   >
                     {size}
@@ -527,36 +513,27 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
 
           {/* Price */}
           <FilterSection title="Цена" section="price" icon={null}>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-neutral-gray-600 mb-2">От, ₽</label>
                   <input
                     type="number"
                     value={local.priceRange[0]}
                     onChange={(e) => handleLocalPriceChange(Number(e.target.value), 0)}
-                    className="w-full px-3 py-2 border border-neutral-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                    placeholder="0"
+                    className="w-full px-3 py-2 border border-neutral-gray-300 rounded text-sm focus:ring-1 focus:ring-neutral-black focus:border-neutral-black outline-none"
+                    placeholder="От"
                   />
                 </div>
+                <span className="text-neutral-gray-500">—</span>
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-neutral-gray-600 mb-2">До, ₽</label>
                   <input
                     type="number"
                     value={local.priceRange[1]}
                     onChange={(e) => handleLocalPriceChange(Number(e.target.value), 1)}
-                    className="w-full px-3 py-2 border border-neutral-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-                    placeholder="50000"
+                    className="w-full px-3 py-2 border border-neutral-gray-300 rounded text-sm focus:ring-1 focus:ring-neutral-black focus:border-neutral-black outline-none"
+                    placeholder="До"
                   />
                 </div>
-              </div>
-
-              
-
-              <div className="text-center text-sm text-neutral-gray-600 bg-neutral-gray-50 p-2 rounded">
-                {new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(local.priceRange[0])}{" "}
-                -{" "}
-                {new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB" }).format(local.priceRange[1])}
               </div>
             </div>
           </FilterSection>
@@ -567,52 +544,30 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             section="special"
             badge={(local.hasDiscount ? 1 : 0) + (local.inStock ? 1 : 0)}
           >
-            <div className="space-y-3">
-              <label className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200">
+            <div className="space-y-1.5">
+              <label className="flex items-center py-2 px-1 hover:bg-neutral-gray-50 rounded cursor-pointer transition-colors group">
                 <input
                   type="checkbox"
                   checked={local.hasDiscount}
                   onChange={() => handleSpecialToggle("hasDiscount")}
-                  className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
+                  className="mr-3 w-4 h-4 text-brand-primary focus:ring-brand-primary focus:ring-1 border-neutral-gray-300 rounded"
                 />
-                <Percent className="w-5 h-5 mr-3 text-red-500" />
-                <div>
-                  <div className="text-sm font-medium text-neutral-black">Только со скидкой</div>
-                  <div className="text-xs text-neutral-gray-600">Товары с выгодной ценой</div>
-                </div>
+                <span className="text-sm text-neutral-black group-hover:text-brand-primary">Только со скидкой</span>
               </label>
 
-              <label className="flex items-center p-3 hover:bg-neutral-gray-50 rounded-lg cursor-pointer transition-colors border border-neutral-gray-200">
+              <label className="flex items-center py-2 px-1 hover:bg-neutral-gray-50 rounded cursor-pointer transition-colors group">
                 <input
                   type="checkbox"
                   checked={local.inStock}
                   onChange={() => handleSpecialToggle("inStock")}
-                  className="mr-3 text-brand-primary focus:ring-brand-primary focus:ring-2"
+                  className="mr-3 w-4 h-4 text-brand-primary focus:ring-brand-primary focus:ring-1 border-neutral-gray-300 rounded"
                 />
-                <Package className="w-5 h-5 mr-3 text-green-500" />
-                <div>
-                  <div className="text-sm font-medium text-neutral-black">Только в наличии</div>
-                  <div className="text-xs text-neutral-gray-600">Товары доступные для покупки</div>
-                </div>
+                <span className="text-sm text-neutral-black group-hover:text-brand-primary">Только в наличии</span>
               </label>
             </div>
           </FilterSection>
-          <div className="fixed left-0 right-0 bottom-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:mt-4 w-full px-6 pb-6 lg:px-0 lg:pb-0">
-            <button
-              onClick={applyFilters}
-              className="w-full px-4 py-3 bg-brand-primary text-white rounded-lg text-sm font-semibold shadow hover:bg-brand-dark transition-all"
-            >
-              Применить
-            </button>
-      </div>
         </div>
-
-        {/* Пустой паддинг, чтобы не перекрывать фикс. панель */}
-        <div />
       </div>
-
-      {/* Фиксированная панель Apply / Reset (вариант 1) */}
-      
     </>
   );
 };

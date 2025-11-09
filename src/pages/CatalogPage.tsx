@@ -17,7 +17,6 @@ const CatalogPage: React.FC = () => {
     }
   };
 
-  // Update search query when URL params change
   useEffect(() => {
     const urlSearchQuery = searchParams.get("search") || "";
     setSearchQuery(urlSearchQuery);
@@ -26,7 +25,10 @@ const CatalogPage: React.FC = () => {
   return (
     <div className="bg-neutral-gray-100 min-h-screen">
       {/* Product Catalog */}
-      <ProductCatalog searchQuery={searchQuery} onSearchChange={handleSearchChange} />
+      <ProductCatalog
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+      />
     </div>
   );
 };

@@ -1,10 +1,12 @@
 import type React from 'react';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Grid, List, Search } from 'lucide-react';
+import { Grid, List, Search, ChevronDown } from 'lucide-react';
 import type { Product, FilterOptions } from '../types';
 import ProductCard from './ProductCard';
 import ProductFilters from './ProductFilters';
 import ProductModal from './ProductModal';
+import ActiveFiltersChips from './ActiveFiltersChips';
+import QuickFilters from './QuickFilters';
 
 interface ProductCatalogProps {
   searchQuery: string;
@@ -15,6 +17,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [isFiltering, setIsFiltering] = useState(false); // Состояние для фильтрации (не первой загрузки)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -27,9 +30,8 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
   const observerTarget = useRef<HTMLDivElement>(null);
   const ITEMS_PER_PAGE = 20;
 
-  // Состояние для раскрытых секций фильтров
+  // Состояние для раскрытых секций фильтров (убрали sort, так как он теперь вверху)
   const [expandedFilterSections, setExpandedFilterSections] = useState({
-    sort: false,
     productType: false,
     gender: false,
     brands: false,
@@ -37,6 +39,10 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
     price: false,
     special: false,
   });
+
+  // Load filters data
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
 
   const [filters, setFilters] = useState<FilterOptions>({
     brands: [],
@@ -65,9 +71,66 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
     setFilters(newFilters);
   }, []);
 
-  // Load filters data
-  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
+  // Обработчик удаления одного фильтра
+  const handleRemoveFilter = useCallback((type: string, value: any) => {
+    setFilters((prev) => {
+      const newFilters = { ...prev };
+      
+      switch (type) {
+        case 'productType':
+          newFilters.productTypes = prev.productTypes.filter((t) => t !== value);
+          break;
+        case 'gender':
+          newFilters.gender = prev.gender.filter((g) => g !== value);
+          break;
+        case 'brand':
+          newFilters.brands = prev.brands.filter((b) => b !== value);
+          break;
+        case 'size':
+          newFilters.sizes = prev.sizes.filter((s) => s !== value);
+          break;
+        case 'price':
+          newFilters.priceRange = priceRange;
+          break;
+        case 'hasDiscount':
+          newFilters.hasDiscount = false;
+          break;
+        case 'inStock':
+          newFilters.inStock = false;
+          break;
+      }
+      
+      return newFilters;
+    });
+  }, [priceRange]);
+
+  // Обработчик очистки всех фильтров
+  const handleClearAllFilters = useCallback(() => {
+    setFilters({
+      brands: [],
+      sizes: [],
+      priceRange: priceRange,
+      categories: [],
+      productTypes: [],
+      gender: [],
+      colors: [],
+      footwearTypes: [],
+      clothingTypes: [],
+      toyTypes: [],
+      accessoryTypes: [],
+      materials: [],
+      seasons: [],
+      ageGroups: [],
+      occasions: [],
+      hasDiscount: false,
+      inStock: false,
+      sortBy: 'name',
+      sortOrder: 'asc',
+    });
+  }, [priceRange]);
+
+  // Состояние для выпадающего списка сортировки
+  const [isSortOpen, setIsSortOpen] = useState(false);
 
   useEffect(() => {
     const loadFiltersData = async () => {
@@ -78,7 +141,13 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           apiService.getPriceRange()
         ]);
         setAvailableBrands(brands);
-        setPriceRange([priceRangeData.min, priceRangeData.max]);
+        const newPriceRange: [number, number] = [priceRangeData.min, priceRangeData.max];
+        setPriceRange(newPriceRange);
+        // Обновляем фильтры с правильным priceRange
+        setFilters((prev) => ({
+          ...prev,
+          priceRange: newPriceRange,
+        }));
       } catch (error) {
         console.error('Error loading filters data:', error);
       }
@@ -146,16 +215,25 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
   // Reset and load initial products when filters or search changes
   const filtersKey = useMemo(() => JSON.stringify(filters), [filters]);
   const searchKey = searchQuery;
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     const resetAndLoad = async () => {
       try {
-        setProductsLoading(true);
+        // Показываем скелетон только при первой загрузке
+        if (isInitialLoad.current) {
+          setProductsLoading(true);
+          isInitialLoad.current = false;
+        } else {
+          // При изменении фильтров показываем только индикатор загрузки без скелетона
+          setIsFiltering(true);
+        }
+        
         setPage(0);
         setHasMore(true);
-        setFilteredProducts([]);
-        setProducts([]);
-
+        
+        // Не очищаем продукты сразу - показываем старые пока загружаются новые
+        // Это предотвратит подергивание
         const apiService = (await import('../utils/api')).default;
         let data: Product[];
 
@@ -184,14 +262,17 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           }
         }
 
+        // Обновляем продукты только после загрузки - плавный переход
         setFilteredProducts(data);
         setProducts(data);
         setPage(1);
       } catch (error) {
         console.error('Error loading filtered products:', error);
         setFilteredProducts([]);
+        setProducts([]);
       } finally {
         setProductsLoading(false);
+        setIsFiltering(false);
       }
     };
 
@@ -245,9 +326,39 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Quick Filters - Horizontal Scroll under header */}
+      <div className="mb-6">
+        <QuickFilters filters={filters} onFilterChange={handleFiltersChange} />
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Filters Sidebar */}
         <div className="lg:w-64 flex-shrink-0">
+          {/* Search Input - Above Filters */}
+          <form 
+            onSubmit={(e: React.FormEvent) => {
+              e.preventDefault();
+              onSearchChange(localSearchQuery);
+            }}
+            className="relative mb-6"
+          >
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Поиск товаров..."
+              value={localSearchQuery}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-16 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm"
+            />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-brand-primary text-white px-3 py-1 rounded-md hover:bg-brand-dark transition-colors text-xs font-medium"
+            >
+              Найти
+            </button>
+          </form>
+
+          {/* Main Filters */}
           <ProductFilters
             filters={filters}
             onFiltersChange={handleFiltersChange}
@@ -258,38 +369,14 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
             expandedSections={expandedFilterSections}
             onExpandedSectionsChange={setExpandedFilterSections}
           />
-          
-          {/* Mobile Search - Below Filters */}
-          <form 
-            onSubmit={(e: React.FormEvent) => {
-              e.preventDefault();
-              onSearchChange(localSearchQuery);
-            }}
-            className="relative lg:hidden mt-4"
-          >
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Поиск кроссовок..."
-              value={localSearchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-20 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm"
-            />
-            <button
-              type="submit"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-brand-primary text-white px-2.5 rounded hover:bg-brand-dark transition-colors text-[11px] font-medium !h-6 !min-h-0 flex items-center justify-center"
-            >
-              Найти
-            </button>
-          </form>
         </div>
 
         {/* Main Content */}
         <div className="flex-1">
           {/* Header */}
           <div className="mb-6">
-            {/* Title, Search and View Toggle Row */}
-            <div className="flex items-center gap-4 mb-2">
+            {/* Title and View Toggle Row */}
+            <div className="flex items-center gap-4 mb-4">
               <h1 className="text-2xl font-bold text-neutral-black whitespace-nowrap">
                 Каталог товаров
               </h1>
@@ -297,32 +384,8 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
               {/* Spacer */}
               <div className="flex-1"></div>
 
-              {/* Desktop Search Input - Hidden on Mobile */}
-              <form 
-                onSubmit={(e: React.FormEvent) => {
-                  e.preventDefault();
-                  onSearchChange(localSearchQuery);
-                }}
-                className="relative w-80 hidden lg:block"
-              >
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Поиск кроссовок..."
-                  value={localSearchQuery}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-16 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-brand-primary text-white px-3 py-1 rounded-md hover:bg-brand-dark transition-colors text-xs font-medium"
-                >
-                  Найти
-                </button>
-              </form>
-
-              {/* View Mode Toggle - Hidden on Mobile */}
-              <div className="hidden lg:flex items-center space-x-2 bg-neutral-gray-100 rounded-lg p-1">
+              {/* View Mode Toggle */}
+              <div className="flex items-center space-x-2 bg-neutral-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded transition-colors ${
@@ -346,14 +409,81 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
               </div>
             </div>
 
-            <p className="text-neutral-gray-600">
-              Найдено {filteredProducts.length} товаров
-              {searchQuery && ` по запросу "${searchQuery}"`}
-            </p>
+            {/* Sort and Results Row */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-neutral-gray-600">
+                Найдено {filteredProducts.length} товаров
+                {searchQuery && ` по запросу "${searchQuery}"`}
+              </p>
+
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsSortOpen(!isSortOpen)}
+                  className="flex items-center gap-2 px-4 py-2 border border-neutral-gray-300 rounded-lg hover:bg-neutral-gray-50 transition-colors text-sm font-medium"
+                >
+                  <span>
+                    {filters.sortBy === 'name' && filters.sortOrder === 'asc' && 'По названию А-Я'}
+                    {filters.sortBy === 'name' && filters.sortOrder === 'desc' && 'По названию Я-А'}
+                    {filters.sortBy === 'price' && filters.sortOrder === 'asc' && 'Сначала дешевые'}
+                    {filters.sortBy === 'price' && filters.sortOrder === 'desc' && 'Сначала дорогие'}
+                    {filters.sortBy === 'newest' && 'Новинки первыми'}
+                    {filters.sortBy === 'popularity' && 'По популярности'}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isSortOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isSortOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsSortOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-56 bg-white border border-neutral-gray-200 rounded-lg shadow-lg z-20 py-1">
+                      {[
+                        { value: "name", label: "По названию А-Я", order: "asc" as const },
+                        { value: "name", label: "По названию Я-А", order: "desc" as const },
+                        { value: "price", label: "Сначала дешевые", order: "asc" as const },
+                        { value: "price", label: "Сначала дорогие", order: "desc" as const },
+                        { value: "newest", label: "Новинки первыми", order: "desc" as const },
+                        { value: "popularity", label: "По популярности", order: "desc" as const },
+                      ].map((option) => (
+                        <button
+                          key={`${option.value}-${option.order}`}
+                          onClick={() => {
+                            setFilters((prev) => ({
+                              ...prev,
+                              sortBy: option.value as any,
+                              sortOrder: option.order,
+                            }));
+                            setIsSortOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-neutral-gray-50 transition-colors ${
+                            filters.sortBy === option.value && filters.sortOrder === option.order
+                              ? 'text-brand-primary font-medium'
+                              : 'text-neutral-black'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Active Filters Chips */}
+            <ActiveFiltersChips
+              filters={filters}
+              onRemoveFilter={handleRemoveFilter}
+              onClearAll={handleClearAllFilters}
+              priceRange={priceRange}
+            />
           </div>
 
           {/* Products Grid */}
-          {productsLoading ? (
+          {productsLoading && filteredProducts.length === 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {[...Array(8)].map((_, index) => (
                 <div key={index} className="bg-neutral-gray-200 animate-pulse rounded-lg h-96"></div>
@@ -400,23 +530,34 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
               </button>
             </div>
           ) : (
-            <div className={
-              viewMode === 'grid'
-                ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
-                : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
-            }>
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onClick={handleProductClick}
-                />
-              ))}
-            </div>
+            <>
+              <div className={
+                viewMode === 'grid'
+                  ? 'grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'
+                  : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
+              }>
+                {filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onClick={handleProductClick}
+                  />
+                ))}
+              </div>
+              {/* Показываем индикатор загрузки поверх продуктов при изменении фильтров */}
+              {isFiltering && filteredProducts.length > 0 && (
+                <div className="mt-4 flex justify-center">
+                  <div className="inline-flex items-center gap-2 text-sm text-neutral-gray-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-primary"></div>
+                    <span>Обновление...</span>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Loading more indicator */}
-          {isLoadingMore && (
+          {/* Loading more indicator - только для lazy loading, не для фильтров */}
+          {isLoadingMore && filteredProducts.length > 0 && !isFiltering && (
             <div className="py-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
               <p className="mt-2 text-neutral-gray-600">Загрузка товаров...</p>

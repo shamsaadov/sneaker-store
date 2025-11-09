@@ -32,6 +32,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
 
   // Состояние для раскрытых секций фильтров (убрали sort, так как он теперь вверху)
   const [expandedFilterSections, setExpandedFilterSections] = useState({
+    sort: false,
     productType: false,
     gender: false,
     brands: false,

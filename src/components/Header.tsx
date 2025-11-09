@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, User, Settings } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import MegaMenu from "./MegaMenu";
+import MobileMegaMenu from "./MobileMegaMenu";
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -17,7 +19,6 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
 
   const navLinks = [
     { name: "Главная", path: "/" },
-    { name: "Каталог", path: "/catalog" },
     { name: "Спецзаказы", path: "/special-orders" },
     // { name: "О нас", path: "/about" },
     // { name: "Контакты", path: "/contact" },
@@ -54,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
   return (
     <header className="bg-neutral-white shadow-lg sticky top-0 z-50">
   <div className="container mx-auto sm:p-4">
-    <div className="flex items-center">
+    <div className="flex items-center relative">
       
       {/* Левая часть: логотип */}
       <div className="flex items-center flex-1">
@@ -72,13 +73,13 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
         </Link>
       </div>
 
-      {/* Центр: навигация */}
+      {/* Центр: навигация с мега-меню */}
       <nav className="hidden lg:flex items-center space-x-8 flex-none justify-center">
         {navLinks.map((link) => (
           <Link
             key={link.name}
             to={link.path}
-            className={`transition-colors font-medium ${
+            className={`transition-colors font-medium py-6 ${
               isActivePage(link.path)
                 ? "text-brand-primary font-semibold"
                 : "text-gray-500 hover:text-gray-400"
@@ -87,6 +88,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
             {link.name}
           </Link>
         ))}
+        <MegaMenu />
       </nav>
 
       {/* Правая часть: иконки */}
@@ -127,23 +129,31 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
 
     {/* Мобильное меню */}
     {isMenuOpen && (
-      <div className="lg:hidden bg-neutral-white border-t border-gray-200">
+      <div className="lg:hidden bg-neutral-white border-t border-gray-200 max-h-[80vh] overflow-y-auto">
         <nav className="container mx-auto px-4 py-4">
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-2">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
                 onClick={() => setIsMenuOpen(false)}
-                className={`transition-colors font-medium py-2 ${
+                className={`transition-colors font-medium py-3 ${
                   isActivePage(link.path)
                     ? "text-brand-primary font-semibold"
-                    : "text-gray-500 hover:text-gray-400"
+                    : "text-gray-700 hover:text-gray-900"
                 }`}
               >
                 {link.name}
               </Link>
             ))}
+            
+            {/* Мобильное мега-меню с категориями */}
+            <div className="border-t border-gray-200 pt-4 mt-2">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                Категории
+              </div>
+              <MobileMegaMenu onLinkClick={() => setIsMenuOpen(false)} />
+            </div>
           </div>
         </nav>
       </div>

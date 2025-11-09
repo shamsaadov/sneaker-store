@@ -8,18 +8,28 @@ const CatalogPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
   );
+  const [categoryId, setCategoryId] = useState(
+    searchParams.get("category") || undefined
+  );
 
   const handleSearchChange = (query: string) => {
+    const params = new URLSearchParams(searchParams);
+    
     if (query.trim()) {
-      setSearchParams({ search: query });
+      params.set("search", query);
     } else {
-      setSearchParams({});
+      params.delete("search");
     }
+    
+    setSearchParams(params);
   };
 
   useEffect(() => {
     const urlSearchQuery = searchParams.get("search") || "";
+    const urlCategory = searchParams.get("category") || undefined;
+    
     setSearchQuery(urlSearchQuery);
+    setCategoryId(urlCategory);
   }, [searchParams]);
 
   return (
@@ -28,6 +38,7 @@ const CatalogPage: React.FC = () => {
       <ProductCatalog
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
+        categoryId={categoryId}
       />
     </div>
   );

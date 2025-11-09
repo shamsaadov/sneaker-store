@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Grid, List, Search, ChevronDown } from 'lucide-react';
-import type { Product, FilterOptions } from '../types';
+import type { Product, FilterOptions, Category } from '../types';
 import ProductCard from './ProductCard';
 import ProductFilters from './ProductFilters';
 import ProductModal from './ProductModal';
@@ -11,9 +11,10 @@ import QuickFilters from './QuickFilters';
 interface ProductCatalogProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  categoryId?: string;
 }
 
-const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchChange }) => {
+const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchChange, categoryId }) => {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -44,12 +45,13 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
   // Load filters data
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
+  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
 
   const [filters, setFilters] = useState<FilterOptions>({
     brands: [],
     sizes: [],
     priceRange: [0, 50000],
-    categories: [],
+    categories: categoryId ? [categoryId] : [],
     productTypes: [],
     gender: [],
     colors: [],
@@ -111,7 +113,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
       brands: [],
       sizes: [],
       priceRange: priceRange,
-      categories: [],
+      categories: categoryId ? [categoryId] : [],
       productTypes: [],
       gender: [],
       colors: [],
@@ -128,19 +130,43 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
       sortBy: 'name',
       sortOrder: 'asc',
     });
-  }, [priceRange]);
+  }, [priceRange, categoryId]);
 
   // Состояние для выпадающего списка сортировки
   const [isSortOpen, setIsSortOpen] = useState(false);
+
+  // Update filters when categoryId changes from URL
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      categories: categoryId ? [categoryId] : [],
+    }));
+    
+    // Load category info
+    if (categoryId) {
+      const loadCategory = async () => {
+        try {
+          const apiService = (await import('../utils/api')).default;
+          const category = await apiService.getCategory(categoryId);
+          setCurrentCategory(category);
+        } catch (error) {
+          console.error('Error loading category:', error);
+          setCurrentCategory(null);
+        }
+      };
+      loadCategory();
+    } else {
+      setCurrentCategory(null);
+    }
+  }, [categoryId]);
 
   useEffect(() => {
     const loadFiltersData = async () => {
       try {
         const apiService = (await import('../utils/api')).default;
-        const [brands, priceRangeData] = await Promise.all([
-          apiService.getBrands(),
-          apiService.getPriceRange()
-        ]);
+        // Use single batch request instead of multiple
+        const { brands, priceRange: priceRangeData } = await apiService.getFiltersMetadata();
+        
         setAvailableBrands(brands);
         const newPriceRange: [number, number] = [priceRangeData.min, priceRangeData.max];
         setPriceRange(newPriceRange);
@@ -217,9 +243,18 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
   const filtersKey = useMemo(() => JSON.stringify(filters), [filters]);
   const searchKey = searchQuery;
   const isInitialLoad = useRef(true);
+  const loadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const resetAndLoad = async () => {
+    // Clear any pending load timeout
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current);
+    }
+
+    // Add debounce for filter changes (but not for initial load)
+    const delay = isInitialLoad.current ? 0 : 300;
+
+    loadTimeoutRef.current = setTimeout(async () => {
       try {
         // Показываем скелетон только при первой загрузке
         if (isInitialLoad.current) {
@@ -275,9 +310,13 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
         setProductsLoading(false);
         setIsFiltering(false);
       }
-    };
+    }, delay);
 
-    resetAndLoad();
+    return () => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current);
+      }
+    };
   }, [searchKey, filtersKey]);
 
   // Intersection Observer for lazy loading
@@ -378,12 +417,16 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           <div className="mb-6">
             {/* Title and View Toggle Row */}
             <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-2xl font-bold text-neutral-black whitespace-nowrap">
-                Каталог товаров
-              </h1>
-
-              {/* Spacer */}
-              <div className="flex-1"></div>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-neutral-black">
+                  {currentCategory ? currentCategory.name : 'Каталог товаров'}
+                </h1>
+                {currentCategory && currentCategory.description && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {currentCategory.description}
+                  </p>
+                )}
+              </div>
 
               {/* View Mode Toggle */}
               <div className="flex items-center space-x-2 bg-neutral-gray-100 rounded-lg p-1">
@@ -504,7 +547,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
                     brands: [],
                     sizes: [],
                     priceRange: priceRange,
-                    categories: [],
+                    categories: categoryId ? [categoryId] : [],
                     productTypes: [],
                     gender: [],
                     colors: [],

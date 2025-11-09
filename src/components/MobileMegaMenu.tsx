@@ -90,7 +90,7 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
   return (
     <div>
       <div
-        className={`flex items-center justify-between py-3 transition-colors ${
+        className={`flex items-center justify-between py-3 transition-colors touch-manipulation ${
           level === 0
             ? "font-bold text-gray-900"
             : level === 1
@@ -101,8 +101,11 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
       >
         <Link
           to={`/catalog?category=${category.id}`}
-          onClick={onLinkClick}
-          className="flex-1 hover:text-brand-primary transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onLinkClick();
+          }}
+          className="flex-1 hover:text-brand-primary transition-colors active:text-brand-primary"
         >
           {category.name}
           {category.productCount !== undefined && category.productCount > 0 && (
@@ -115,8 +118,11 @@ const CategoryItem: React.FC<CategoryItemProps> = ({
         {hasChildren && (
           <button
             type="button"
-            onClick={() => onToggle(category.id)}
-            className="p-2 hover:bg-gray-100 rounded transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(category.id);
+            }}
+            className="p-2 hover:bg-gray-100 active:bg-gray-200 rounded transition-colors touch-manipulation flex-shrink-0"
             aria-label={isExpanded ? "Свернуть" : "Развернуть"}
           >
             {isExpanded ? (

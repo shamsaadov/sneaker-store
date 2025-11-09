@@ -129,15 +129,21 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
 
     {/* Мобильное меню */}
     {isMenuOpen && (
-      <div className="lg:hidden bg-neutral-white border-t border-gray-200 max-h-[80vh] overflow-y-auto">
+      <div 
+        className="lg:hidden bg-neutral-white border-t border-gray-200 max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <nav className="container mx-auto px-4 py-4">
           <div className="flex flex-col space-y-2">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                onClick={() => setIsMenuOpen(false)}
-                className={`transition-colors font-medium py-3 ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                }}
+                className={`transition-colors font-medium py-3 touch-manipulation ${
                   isActivePage(link.path)
                     ? "text-brand-primary font-semibold"
                     : "text-gray-700 hover:text-gray-900"
@@ -149,7 +155,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick, onAdminClick }) => {
             
             {/* Мобильное мега-меню с категориями */}
             <div className="border-t border-gray-200 pt-4 mt-2">
-              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 pointer-events-none">
                 Категории
               </div>
               <MobileMegaMenu onLinkClick={() => setIsMenuOpen(false)} />

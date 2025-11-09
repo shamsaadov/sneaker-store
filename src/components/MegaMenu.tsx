@@ -34,9 +34,11 @@ const MegaMenu: React.FC = () => {
     try {
       setLoading(true);
       const data = await apiService.getCategoriesTree();
-      setCategories(data);
+      console.log("MegaMenu: Loaded categories:", data?.length);
+      setCategories(data || []);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      console.error("MegaMenu: Error loading categories:", error);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -108,6 +110,11 @@ const MegaMenu: React.FC = () => {
   };
 
   if (loading) {
+    return null;
+  }
+
+  if (!categories || categories.length === 0) {
+    console.warn("MegaMenu: No categories to display");
     return null;
   }
 

@@ -195,19 +195,26 @@ class ApiService {
 
     // Check if there's already a pending request for this
     if (this.pendingRequests.has(cacheKey)) {
+      console.log("getCategoriesTree: Returning pending request");
       return this.pendingRequests.get(cacheKey);
     }
 
     const cached = cache.get<Category[]>(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      console.log("getCategoriesTree: Returning cached data", cached.length);
+      return cached;
+    }
 
+    console.log("getCategoriesTree: Fetching from API");
     const promise = this.request<Category[]>("/categories?format=tree")
       .then((data) => {
+        console.log("getCategoriesTree: Received data", data?.length);
         cache.set(cacheKey, data, 10 * 60 * 1000); // Cache for 10 minutes
         this.pendingRequests.delete(cacheKey);
         return data;
       })
       .catch((error) => {
+        console.error("getCategoriesTree: Error", error);
         this.pendingRequests.delete(cacheKey);
         throw error;
       });

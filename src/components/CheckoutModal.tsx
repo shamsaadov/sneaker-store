@@ -74,7 +74,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose }) => {
       showToast({
         type: "success",
         title: "Заказ успешно оформлен!",
-        message: `Номер заказа: ${order.order_number}. Мы свяжемся с вами в ближайшее время.`,
+        message: `Номер заказа: ${order?.order_number}. Мы свяжемся с вами в ближайшее время.`,
         duration: 8000,
       });
 

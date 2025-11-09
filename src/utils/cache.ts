@@ -69,3 +69,22 @@ setInterval(() => {
   cache.cleanup();
 }, 5 * 60 * 1000);
 
+// Debug function to inspect cache (for development)
+if (typeof window !== 'undefined') {
+  (window as any).debugCache = {
+    list: () => cache,
+    clear: () => cache.clear(),
+    clearCategories: () => {
+      cache.delete('categories:all');
+      cache.delete('categories:tree');
+      console.log('Categories cache cleared');
+    },
+    clearFilters: () => {
+      cache.delete('filters:metadata');
+      cache.delete('filters:brands');
+      cache.delete('filters:priceRange');
+      console.log('Filters cache cleared');
+    }
+  };
+}
+

@@ -30,6 +30,7 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
   const ITEMS_PER_PAGE = 20;
+  const loadingRef = useRef(false); // Ref to prevent multiple simultaneous loads
 
   // Состояние для раскрытых секций фильтров (убрали sort, так как он теперь вверху)
   const [expandedFilterSections, setExpandedFilterSections] = useState({
@@ -188,16 +189,28 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
 
   // Load more products function
   const loadMoreProducts = useCallback(async () => {
-    if (isLoadingMore || !hasMore) {
+    // Multiple safeguards against repeated calls
+    if (loadingRef.current || isLoadingMore || !hasMore || productsLoading) {
+      console.log('loadMoreProducts: Blocked', { 
+        loadingRef: loadingRef.current, 
+        isLoadingMore, 
+        hasMore,
+        productsLoading 
+      });
       return;
     }
 
+    // Set loading flags
+    loadingRef.current = true;
+    setIsLoadingMore(true);
+
     try {
-      setIsLoadingMore(true);
       const apiService = (await import('../utils/api')).default;
 
       let data: Product[];
       const offset = page * ITEMS_PER_PAGE;
+
+      console.log('loadMoreProducts: Loading page', page, 'offset', offset);
 
       if (searchQuery) {
         // Use search API
@@ -222,22 +235,32 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
         };
         data = await apiService.getProducts(apiFilters);
         
-        // If we got less than ITEMS_PER_PAGE, we've reached the end
+        console.log('loadMoreProducts: Received', data.length, 'products');
+        
+        // If we got less than ITEMS_PER_PAGE or 0 products, we've reached the end
         if (data.length < ITEMS_PER_PAGE) {
+          console.log('loadMoreProducts: No more products to load');
           setHasMore(false);
         }
       }
 
-      // Append new products to existing ones
-      setFilteredProducts((prev: Product[]) => [...prev, ...data]);
-      setProducts((prev: Product[]) => [...prev, ...data]);
-      setPage((prev: number) => prev + 1);
+      // Only append if we got data
+      if (data.length > 0) {
+        setFilteredProducts((prev: Product[]) => [...prev, ...data]);
+        setProducts((prev: Product[]) => [...prev, ...data]);
+        setPage((prev: number) => prev + 1);
+      } else {
+        // No more data
+        setHasMore(false);
+      }
     } catch (error) {
       console.error('Error loading more products:', error);
+      // Don't set hasMore to false on error, allow retry
     } finally {
       setIsLoadingMore(false);
+      loadingRef.current = false;
     }
-  }, [page, hasMore, isLoadingMore, searchQuery, filters, ITEMS_PER_PAGE]);
+  }, [page, hasMore, isLoadingMore, searchQuery, filters, ITEMS_PER_PAGE, productsLoading]);
 
   // Reset and load initial products when filters or search changes
   const filtersKey = useMemo(() => JSON.stringify(filters), [filters]);
@@ -250,6 +273,9 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
     if (loadTimeoutRef.current) {
       clearTimeout(loadTimeoutRef.current);
     }
+
+    // Reset loading ref on filter change
+    loadingRef.current = false;
 
     // Add debounce for filter changes (but not for initial load)
     const delay = isInitialLoad.current ? 0 : 300;
@@ -265,8 +291,10 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           setIsFiltering(true);
         }
         
+        // Reset pagination state
         setPage(0);
         setHasMore(true);
+        setIsLoadingMore(false);
         
         // Не очищаем продукты сразу - показываем старые пока загружаются новые
         // Это предотвратит подергивание
@@ -293,19 +321,23 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           };
           data = await apiService.getProducts(apiFilters);
           
+          // Set hasMore based on results
           if (data.length < ITEMS_PER_PAGE) {
             setHasMore(false);
+          } else {
+            setHasMore(true);
           }
         }
 
         // Обновляем продукты только после загрузки - плавный переход
         setFilteredProducts(data);
         setProducts(data);
-        setPage(1);
+        setPage(1); // Start from page 1 after initial load
       } catch (error) {
         console.error('Error loading filtered products:', error);
         setFilteredProducts([]);
         setProducts([]);
+        setHasMore(false);
       } finally {
         setProductsLoading(false);
         setIsFiltering(false);
@@ -321,13 +353,35 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
 
   // Intersection Observer for lazy loading
   useEffect(() => {
+    // Don't set up observer if we're still loading initial data
+    if (productsLoading || isFiltering) {
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+        const target = entries[0];
+        // Only trigger if:
+        // 1. Target is intersecting
+        // 2. We have more items to load
+        // 3. We're not currently loading
+        // 4. Not in initial loading state
+        if (
+          target.isIntersecting && 
+          hasMore && 
+          !isLoadingMore && 
+          !loadingRef.current &&
+          !productsLoading &&
+          !isFiltering
+        ) {
+          console.log('IntersectionObserver: Triggering load more');
           loadMoreProducts();
         }
       },
-      { threshold: 0.1 }
+      { 
+        threshold: 0.1,
+        rootMargin: '100px' // Start loading before user reaches the bottom
+      }
     );
 
     const currentTarget = observerTarget.current;
@@ -339,8 +393,9 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
       if (currentTarget) {
         observer.unobserve(currentTarget);
       }
+      observer.disconnect();
     };
-  }, [hasMore, isLoadingMore, loadMoreProducts]);
+  }, [hasMore, isLoadingMore, loadMoreProducts, productsLoading, isFiltering]);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -609,15 +664,20 @@ const ProductCatalog: React.FC<ProductCatalogProps> = ({ searchQuery, onSearchCh
           )}
 
           {/* Intersection observer target */}
-          <div 
-            ref={observerTarget} 
-            className="h-20 flex items-center justify-center"
-            style={{ minHeight: '80px' }}
-          >
-            {hasMore && !isLoadingMore && (
-              <p className="text-gray-400 text-sm">Прокрутите вниз для загрузки...</p>
-            )}
-          </div>
+          {filteredProducts.length > 0 && (
+            <div 
+              ref={observerTarget} 
+              className="h-20 flex items-center justify-center"
+              style={{ minHeight: '80px' }}
+            >
+              {hasMore && !isLoadingMore && !productsLoading && (
+                <p className="text-gray-400 text-sm">Прокрутите вниз для загрузки...</p>
+              )}
+              {!hasMore && filteredProducts.length > 0 && (
+                <p className="text-gray-400 text-sm">Все товары загружены</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

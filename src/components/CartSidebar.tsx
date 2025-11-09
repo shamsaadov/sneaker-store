@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import CheckoutModal from './CheckoutModal';
+import { showToast } from './ToastContainer';
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -100,12 +101,33 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                       {formatPrice(item.product.price)}
                     </p>
 
+                    {/* Stock info */}
+                    {item.product.stock > 0 && (
+                      <p className="text-xs text-neutral-gray-500 mt-1">
+                        {item.product.stock <= 5 
+                          ? `Осталось ${item.product.stock} шт.` 
+                          : `В наличии: ${item.product.stock} шт.`
+                        }
+                      </p>
+                    )}
+
                     {/* Quantity Controls */}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.size, item.quantity - 1)}
-                          className="p-1 hover:bg-neutral-gray-200 rounded"
+                          onClick={() => {
+                            const result = updateQuantity(item.product.id, item.size, item.quantity - 1);
+                            if (!result.success && result.message) {
+                              showToast({
+                                type: 'error',
+                                title: 'Ошибка',
+                                message: result.message,
+                                duration: 3000
+                              });
+                            }
+                          }}
+                          disabled={item.quantity <= 1}
+                          className="p-1 hover:bg-neutral-gray-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
@@ -113,8 +135,19 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
-                          className="p-1 hover:bg-neutral-gray-200 rounded"
+                          onClick={() => {
+                            const result = updateQuantity(item.product.id, item.size, item.quantity + 1);
+                            if (!result.success && result.message) {
+                              showToast({
+                                type: 'warning',
+                                title: 'Достигнут лимит',
+                                message: result.message,
+                                duration: 3000
+                              });
+                            }
+                          }}
+                          disabled={item.quantity >= item.product.stock}
+                          className="p-1 hover:bg-neutral-gray-200 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="w-4 h-4" />
                         </button>

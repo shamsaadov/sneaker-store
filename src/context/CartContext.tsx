@@ -4,12 +4,13 @@ import type { Cart, CartItem, Product } from '../types';
 
 interface CartContextType {
   cart: Cart;
-  addToCart: (product: Product, size: string | number, quantity?: number) => void;
+  addToCart: (product: Product, size: string | number, quantity?: number) => { success: boolean; message?: string };
   removeFromCart: (productId: string, size: string | number) => void;
-  updateQuantity: (productId: string, size: string | number, quantity: number) => void;
+  updateQuantity: (productId: string, size: string | number, quantity: number) => { success: boolean; message?: string };
   clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
+  getItemQuantityInCart: (productId: string, size: string | number) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,13 +32,26 @@ const cartReducer = (state: Cart, action: CartAction): Cart => {
 
       if (existingItemIndex >= 0) {
         const updatedItems = [...state.items];
-        updatedItems[existingItemIndex].quantity += quantity;
+        const newQuantity = updatedItems[existingItemIndex].quantity + quantity;
+        
+        // Check if new quantity exceeds stock
+        if (newQuantity > product.stock) {
+          // Don't update, return current state
+          return state;
+        }
+        
+        updatedItems[existingItemIndex].quantity = newQuantity;
         return {
           ...state,
           items: updatedItems,
           total: calculateTotal(updatedItems),
           count: calculateCount(updatedItems),
         };
+      }
+
+      // Check if quantity exceeds stock for new item
+      if (quantity > product.stock) {
+        return state;
       }
 
       const newItems = [...state.items, { product, size, quantity }];
@@ -64,11 +78,14 @@ const cartReducer = (state: Cart, action: CartAction): Cart => {
 
     case 'UPDATE_QUANTITY': {
       const { productId, size, quantity } = action.payload;
-      const updatedItems = state.items.map(item =>
-        item.product.id === productId && item.size === size
-          ? { ...item, quantity }
-          : item
-      );
+      const updatedItems = state.items.map(item => {
+        if (item.product.id === productId && item.size === size) {
+          // Check if new quantity exceeds stock
+          const finalQuantity = Math.min(quantity, item.product.stock);
+          return { ...item, quantity: finalQuantity };
+        }
+        return item;
+      });
       return {
         ...state,
         items: updatedItems,
@@ -127,20 +144,69 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Product, size: string | number, quantity = 1) => {
+  const addToCart = (product: Product, size: string | number, quantity = 1): { success: boolean; message?: string } => {
+    // Check if product is out of stock
+    if (product.stock <= 0) {
+      return {
+        success: false,
+        message: 'Товар отсутствует в наличии'
+      };
+    }
+
+    // Get current quantity in cart
+    const currentQuantity = getItemQuantityInCart(product.id, size);
+    const totalQuantity = currentQuantity + quantity;
+
+    // Check if total quantity exceeds stock
+    if (totalQuantity > product.stock) {
+      const availableToAdd = product.stock - currentQuantity;
+      if (availableToAdd <= 0) {
+        return {
+          success: false,
+          message: `Максимальное количество товара уже в корзине (${product.stock} шт.)`
+        };
+      }
+      return {
+        success: false,
+        message: `Можно добавить еще только ${availableToAdd} шт. (всего в наличии: ${product.stock})`
+      };
+    }
+
     dispatch({ type: 'ADD_TO_CART', payload: { product, size, quantity } });
+    return { success: true };
   };
 
   const removeFromCart = (productId: string, size: string | number) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: { productId, size } });
   };
 
-  const updateQuantity = (productId: string, size: string | number, quantity: number) => {
+  const updateQuantity = (productId: string, size: string | number, quantity: number): { success: boolean; message?: string } => {
     if (quantity <= 0) {
       removeFromCart(productId, size);
-    } else {
-      dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, size, quantity } });
+      return { success: true };
     }
+
+    // Find the item to check stock
+    const item = cart.items.find(i => i.product.id === productId && i.size === size);
+    if (!item) {
+      return { success: false, message: 'Товар не найден в корзине' };
+    }
+
+    // Check if quantity exceeds stock
+    if (quantity > item.product.stock) {
+      return {
+        success: false,
+        message: `Максимальное количество: ${item.product.stock} шт.`
+      };
+    }
+
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, size, quantity } });
+    return { success: true };
+  };
+
+  const getItemQuantityInCart = (productId: string, size: string | number): number => {
+    const item = cart.items.find(i => i.product.id === productId && i.size === size);
+    return item ? item.quantity : 0;
   };
 
   const clearCart = () => {
@@ -160,6 +226,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         getCartTotal,
         getCartCount,
+        getItemQuantityInCart,
       }}
     >
       {children}

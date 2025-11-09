@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { X, Heart, Star, Plus, Minus } from 'lucide-react';
 import type { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { showToast } from './ToastContainer';
 
 interface ProductModalProps {
   product: Product | null;
@@ -11,7 +12,7 @@ interface ProductModalProps {
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose }) => {
-  const { addToCart } = useCart();
+  const { addToCart, getItemQuantityInCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | number | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -21,11 +22,33 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      alert('Пожалуйста, выберите размер');
+      showToast({
+        type: 'warning',
+        title: 'Выберите размер',
+        message: 'Пожалуйста, выберите размер товара',
+        duration: 3000
+      });
       return;
     }
-    addToCart(product, selectedSize, quantity);
-    onClose();
+
+    const result = addToCart(product, selectedSize, quantity);
+    
+    if (result.success) {
+      showToast({
+        type: 'success',
+        title: 'Добавлено в корзину',
+        message: `${product.name} (размер ${selectedSize}) - ${quantity} шт.`,
+        duration: 3000
+      });
+      onClose();
+    } else {
+      showToast({
+        type: 'error',
+        title: 'Ошибка',
+        message: result.message || 'Не удалось добавить товар в корзину',
+        duration: 4000
+      });
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -163,24 +186,41 @@ const ProductModal: React.FC<ProductModalProps> = ({ product, isOpen, onClose })
                   <div className="flex items-center border border-neutral-gray-300 rounded-lg">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-2 hover:bg-neutral-gray-100 transition-colors"
+                      disabled={quantity <= 1}
+                      className="p-2 hover:bg-neutral-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
                     <span className="px-4 py-2 font-medium">{quantity}</span>
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="p-2 hover:bg-neutral-gray-100 transition-colors"
+                      onClick={() => {
+                        const inCart = selectedSize ? getItemQuantityInCart(product.id, selectedSize) : 0;
+                        const maxAvailable = product.stock - inCart;
+                        if (quantity < maxAvailable) {
+                          setQuantity(quantity + 1);
+                        }
+                      }}
+                      disabled={selectedSize ? quantity >= (product.stock - getItemQuantityInCart(product.id, selectedSize)) : quantity >= product.stock}
+                      className="p-2 hover:bg-neutral-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
 
-                  {product.stock > 0 && (
-                    <span className="text-sm text-neutral-gray-600">
-                      В наличии: {product.stock} шт.
-                    </span>
-                  )}
+                  <div className="text-sm">
+                    {product.stock > 0 ? (
+                      <>
+                        <span className="text-neutral-gray-600">В наличии: {product.stock} шт.</span>
+                        {selectedSize && getItemQuantityInCart(product.id, selectedSize) > 0 && (
+                          <span className="block text-brand-primary">
+                            В корзине: {getItemQuantityInCart(product.id, selectedSize)} шт.
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-red-500 font-medium">Нет в наличии</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
